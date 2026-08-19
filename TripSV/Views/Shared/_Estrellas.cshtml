@@ -1,0 +1,23 @@
+@model decimal
+@{
+    var llenas = (int)Math.Floor(Model);
+    var media = Model - llenas >= 0.5m;
+}
+<span class="estrellas" title="@Model.ToString("0.0")/5">
+    @for (var i = 1; i <= 5; i++)
+    {
+        if (i <= llenas)
+        {
+            <span class="estrella activa">&#9733;</span>
+        }
+        else if (i == llenas + 1 && media)
+        {
+            <span class="estrella media">&#9733;</span>
+        }
+        else
+        {
+            <span class="estrella">&#9734;</span>
+        }
+    }
+    <strong class="ms-1">@Model.ToString("0.0")/5</strong>
+</span>

@@ -1,47 +1,126 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@inject SignInManager<Usuario> gestorSesion
+@inject UserManager<Usuario> gestorUsuarios
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TripSV</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Trips SV</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TripSV.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TripSV</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Inicio" asp-action="Index" style="font-size: 130%;">El Salvador</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+                        aria-controls="menuPrincipal" aria-expanded="false" aria-label="Mostrar navegación">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="menuPrincipal">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-controller="Categorias" asp-action="Index">Categorías</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-controller="Sitios" asp-action="Index">Sitios</a>
                         </li>
+                        @if (gestorSesion.IsSignedIn(User))
+                        {
+                            @if (User.IsInRole(Roles.Administrador))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="menuAdministrar" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false">Administrar</a>
+                                    <ul class="dropdown-menu" aria-labelledby="menuAdministrar">
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Administracion" asp-controller="Sitios" asp-action="Agregar">Agregar sitios</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Administracion" asp-controller="Sitios" asp-action="Index">Modificar sitios</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Administracion" asp-controller="Categorias" asp-action="Index">Categorías</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Administracion" asp-controller="Moderacion" asp-action="Index">Moderación</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post" class="d-inline">
+                                    <button type="submit" class="nav-link btn btn-link text-white">Cerrar sesión</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Cuenta" asp-action="IniciarSesion">Iniciar sesión</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Cuenta" asp-action="Registrar">Registrarse</a>
+                            </li>
+                        }
                     </ul>
+                    @if (gestorSesion.IsSignedIn(User))
+                    {
+                        <span class="navbar-text text-white">
+                            @User.Identity?.Name
+                            @if (User.IsInRole(Roles.Administrador))
+                            {
+                                <span class="badge bg-warning text-dark ms-2">Administrador</span>
+                            }
+                        </span>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <main role="main">
+        <partial name="_Mensajes" />
+        @RenderBody()
+    </main>
+
+    <footer class="section footer-classic context-dark bg-primary p-2 mt-5">
         <div class="container">
-            &copy; 2026 - TripSV - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row row-30">
+                <div class="col-md-4 col-xl-5">
+                    <div class="pr-xl-4">
+                        <p style="color: #FFF">
+                            Somos una empresa sin fines de lucro que busca ayudar a los turistas que quieren visitar
+                            algunos lugares de El Salvador, brindando información sobre los sitios más interesantes y
+                            bellos de este maravilloso país.
+                        </p>
+                        <p class="rights" style="color: #FFF">
+                            <span>&copy; </span><span>2026</span><span> </span><span>Trips SV</span><span>. </span><span>Todos los derechos reservados.</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4 col-xl-3">
+                    <h5 style="color: #FFF">Contáctenos</h5>
+                    <dl class="contact-list">
+                        <dt style="color: #FFF">Dirección:</dt>
+                        <dd style="color: #FFF">Universidad Don Bosco</dd>
+                    </dl>
+                    <dl class="contact-list">
+                        <dt style="color: #FFF">Correo:</dt>
+                        <dd><a href="mailto:trips.sv2026@gmail.com" class="text-white">trips.sv2026@gmail.com</a></dd>
+                    </dl>
+                    <dl class="contact-list">
+                        <dt style="color: #FFF">Teléfono:</dt>
+                        <dd style="color: #FFF">1234-5678 o 9876-5432</dd>
+                    </dl>
+                </div>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
