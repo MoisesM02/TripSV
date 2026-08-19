@@ -1,0 +1,72 @@
+@model List<Sitio>
+
+<div class="container-fluid py-4">
+    <div class="table-wrapper">
+        <div class="table-title">
+            <div class="row align-items-center mb-3">
+                <div class="col-sm-6">
+                    <h2><b>Modificar sitios</b></h2>
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                    <a class="btn btn-success" asp-action="Agregar">Agregar sitio</a>
+                    <a class="btn btn-secondary" asp-area="" asp-controller="Inicio" asp-action="Index">Regresar</a>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="alert alert-info">Todavía no hay sitios registrados.</div>
+        }
+        else
+        {
+            <form asp-action="Eliminar" method="post"
+                  onsubmit="return confirm('¿Seguro que desea eliminar los sitios seleccionados? También se eliminarán sus comentarios y calificaciones.');">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-danger mb-3">Eliminar seleccionados</button>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>ID</th>
+                                <th>Imagen</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Calificación</th>
+                                <th>Ubicación</th>
+                                <th>Categoría</th>
+                                <th class="text-end">Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sitio in Model)
+                            {
+                                <tr>
+                                    <td><input type="checkbox" name="eliminar" value="@sitio.Id" class="form-check-input" /></td>
+                                    <td>@sitio.Id</td>
+                                    <td>
+                                        <img src="@Url.Action("Imagen", "Sitios", new { area = "", id = sitio.Id })"
+                                             alt="@sitio.Nombre" width="80" height="60" class="rounded object-fit-cover" />
+                                    </td>
+                                    <td>@sitio.Nombre</td>
+                                    <td class="line-clamp">@sitio.Descripcion</td>
+                                    <td>@sitio.Calificacion.ToString("0.0") (@sitio.TotalPuntuaciones)</td>
+                                    <td>@sitio.Ubicacion</td>
+                                    <td class="primera-mayuscula">@sitio.Categoria?.Nombre</td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="Modificar" asp-route-id="@sitio.Id">Editar</a>
+                                        <a class="btn btn-sm btn-outline-secondary" asp-area="" asp-controller="Sitios"
+                                           asp-action="Detalle" asp-route-id="@sitio.Id">Ver</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        }
+    </div>
+</div>
