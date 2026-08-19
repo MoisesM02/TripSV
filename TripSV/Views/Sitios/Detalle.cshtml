@@ -1,0 +1,190 @@
+@model SitioDetalleViewModel
+@{
+    var sitio = Model.Sitio;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Categorias" asp-action="Index">Categorías</a></li>
+            <li class="breadcrumb-item">
+                <a asp-action="MostrarSitios" asp-route-id="@sitio.CategoriaId" class="primera-mayuscula">@sitio.Categoria?.Nombre</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">@sitio.Nombre</li>
+        </ol>
+    </nav>
+
+    <h1>@sitio.Nombre, @sitio.Ubicacion</h1>
+    <p class="lead">@sitio.Descripcion</p>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <img class="img-fluid rounded" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })" alt="@sitio.Nombre" />
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Calificación</h5>
+                    <partial name="_Estrellas" model="sitio.Calificacion" />
+                    <p class="text-muted mt-2">@sitio.TotalPuntuaciones calificación(es) de la comunidad</p>
+
+                    @if (Model.PuedeParticipar)
+                    {
+                        <form asp-controller="Puntuaciones" asp-action="Calificar" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sitioId" value="@sitio.Id" />
+                            <div class="star_content mb-3">
+                                @for (var valor = 1; valor <= 5; valor++)
+                                {
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="valor" id="valor@valor"
+                                               value="@valor" checked="@(Model.MiPuntuacion == valor)" required />
+                                        <label class="form-check-label" for="valor@valor">@valor</label>
+                                    </div>
+                                }
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">
+                                @(Model.MiPuntuacion is null ? "Calificar" : "Actualizar mi calificación")
+                            </button>
+                        </form>
+
+                        @if (Model.MiPuntuacion is not null)
+                        {
+                            <p class="text-success mt-2 mb-0">Su calificación actual: @Model.MiPuntuacion estrella(s).</p>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            Debe <a asp-controller="Cuenta" asp-action="IniciarSesion"
+                                    asp-route-urlRetorno="@Url.Action("Detalle", "Sitios", new { id = sitio.Id })">iniciar sesión</a>
+                            para calificar este sitio.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(sitio.Informacion))
+    {
+        <div class="mt-4" id="informacion">
+            @Html.Raw(sitio.Informacion)
+        </div>
+    }
+
+    <hr class="my-4" />
+
+    <h3>Reseñas de la comunidad (@Model.Comentarios.Count)</h3>
+
+    @if (Model.PuedeParticipar)
+    {
+        <form asp-controller="Comentarios" asp-action="Agregar" method="post" class="mb-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="sitioId" value="@sitio.Id" />
+            <div class="mb-2">
+                <label class="form-label" for="comentario">Escriba su reseña</label>
+                <textarea class="form-control" id="comentario" name="comentario" rows="3" maxlength="1000" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger">Publicar reseña</button>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Debe <a asp-controller="Cuenta" asp-action="IniciarSesion"
+                    asp-route-urlRetorno="@Url.Action("Detalle", "Sitios", new { id = sitio.Id })">iniciar sesión</a>
+            para publicar reseñas o responder a otros usuarios.
+        </div>
+    }
+
+    <div class="comments-container">
+        @if (Model.Comentarios.Count == 0)
+        {
+            <div class="alert alert-light border">Todavía no hay reseñas de este sitio.</div>
+        }
+        else
+        {
+            @foreach (var comentario in Model.Comentarios)
+            {
+                <div class="card mb-3 @(comentario.Oculto ? "border-warning" : "")">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div class="username fw-bold">@comentario.NombreUsuario</div>
+                            <div class="timestamp text-muted small">@comentario.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
+                        </div>
+                        @if (comentario.Oculto)
+                        {
+                            <span class="badge bg-warning text-dark mb-2">Oculto para los visitantes</span>
+                        }
+                        <div class="comment mt-2">@comentario.Texto</div>
+
+                        <div class="mt-2">
+                            @if (Model.PuedeParticipar)
+                            {
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#responder-@comentario.Id">Responder</button>
+                            }
+                            @if (Model.EsAdministrador || string.Equals(comentario.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Seguro que desea eliminar este comentario?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@comentario.Id" />
+                                    <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            }
+                        </div>
+
+                        @if (Model.PuedeParticipar)
+                        {
+                            <div class="collapse mt-3" id="responder-@comentario.Id">
+                                <form asp-controller="Comentarios" asp-action="Agregar" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                    <input type="hidden" name="respuestaAId" value="@comentario.Id" />
+                                    <div class="mb-2">
+                                        <textarea class="form-control" name="comentario" rows="2" maxlength="1000"
+                                                  placeholder="Responder a @comentario.NombreUsuario" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-danger">Enviar respuesta</button>
+                                </form>
+                            </div>
+                        }
+
+                        @if (comentario.Respuestas.Count > 0)
+                        {
+                            <div class="respuestas mt-3 ps-4 border-start">
+                                @foreach (var respuesta in comentario.Respuestas)
+                                {
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="username fw-bold">@respuesta.NombreUsuario</div>
+                                            <div class="timestamp text-muted small">@respuesta.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
+                                        </div>
+                                        @if (respuesta.Oculto)
+                                        {
+                                            <span class="badge bg-warning text-dark">Oculto para los visitantes</span>
+                                        }
+                                        <div class="comment">@respuesta.Texto</div>
+                                        @if (Model.EsAdministrador || string.Equals(respuesta.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
+                                                  onsubmit="return confirm('¿Seguro que desea eliminar esta respuesta?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@respuesta.Id" />
+                                                <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger mt-1">Eliminar</button>
+                                            </form>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

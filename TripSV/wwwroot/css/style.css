@@ -1,0 +1,54 @@
+body,
+html div {
+	padding: 0;
+	margin: 0;
+}
+.slider-slide {
+	height: 70vh;
+	object-fit: cover;
+}
+.cats-slide {
+	height: 200px;
+	object-fit: cover;
+}
+.card-bg {
+	background: rgba(0, 0, 0, 0.6);
+}
+.mask {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+.rgba-black-light {
+	background-color: rgba(0, 0, 0, 0.4);
+}
+.clamp,
+.line-clamp,
+.line-clamp p {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+.text-justify {
+	text-align: justify;
+}
+.footer-classic a,
+.footer-classic a:focus,
+.footer-classic a:active {
+	color: #ffffff;
+}
+.social-inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	padding: 23px;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.5);
+}
+.social-container .col {
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
