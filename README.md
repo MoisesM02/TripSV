@@ -63,22 +63,3 @@ Si cambia el dump de MySQL, se regenera el script con:
 ```bash
 dotnet run Herramientas/ConvertirDumpMySql.cs
 ```
-
-## Equivalencias con la aplicación PHP original
-
-| PHP original | ASP.NET Core MVC |
-|---|---|
-| `index.php` | `Inicio/Index` |
-| `catEN.php` | `Categorias/Index` |
-| `mostrarSitios.php?cat=` | `Sitios/MostrarSitios` |
-| `comments.php?place=` | `Sitios/Detalle/{id}` |
-| `Backend/AddComments.php` | `Comentarios/Agregar` |
-| `Backend/deleteComments.php` | `Comentarios/Eliminar` |
-| `Backend/rating.php` | `Puntuaciones/Calificar` |
-| `login.php` / `register.php` / `cerrarSesion.php` | `Cuenta/IniciarSesion`, `Cuenta/Registrar`, `Cuenta/CerrarSesion` |
-| `password.php` / `formRecuperar.php` | `Cuenta/RecuperarPassword`, `Cuenta/RestablecerPassword` |
-| `editCats.html` + `Backend/cats-*.php` | `Administracion/Categorias` |
-| `addSites.php` + `Backend/uploadSite.php` | `Administracion/Sitios/Agregar` |
-| `editSitios.php` | `Administracion/Sitios/Index` |
-| `modificarSitio.php` + `prueba.php` | `Administracion/Sitios/Modificar` |
-| (no existía) | `Administracion/Moderacion` |
