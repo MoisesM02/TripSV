@@ -46,6 +46,10 @@ namespace TripSV.ViewModels
 
         public int? MiPuntuacion { get; set; }
 
+        public bool EsFavorito { get; set; }
+
+        public int TotalFavoritos { get; set; }
+
         public bool PuedeParticipar { get; set; }
 
         public bool EsAdministrador { get; set; }

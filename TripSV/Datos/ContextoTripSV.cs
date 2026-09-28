@@ -19,6 +19,8 @@ namespace TripSV.Datos
 
         public DbSet<Puntuacion> Puntuaciones => Set<Puntuacion>();
 
+        public DbSet<Favorito> Favoritos => Set<Favorito>();
+
         protected override void OnModelCreating(ModelBuilder modelo)
         {
             base.OnModelCreating(modelo);

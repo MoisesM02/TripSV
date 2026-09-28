@@ -9,5 +9,7 @@ namespace TripSV.Modelos
         public ICollection<Comentario> Comentarios { get; set; } = new List<Comentario>();
 
         public ICollection<Puntuacion> Puntuaciones { get; set; } = new List<Puntuacion>();
+
+        public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
     }
 }

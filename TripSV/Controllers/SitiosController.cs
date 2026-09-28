@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TripSV.Modelos;
 using TripSV.Servicios;
@@ -11,17 +12,23 @@ namespace TripSV.Controllers
         private readonly ICategoriasServicio categorias;
         private readonly IComentariosServicio comentarios;
         private readonly IPuntuacionesServicio puntuaciones;
+        private readonly IFavoritosServicio favoritos;
+        private readonly UserManager<Usuario> gestorUsuarios;
 
         public SitiosController(
             ISitiosServicio sitios,
             ICategoriasServicio categorias,
             IComentariosServicio comentarios,
-            IPuntuacionesServicio puntuaciones)
+            IPuntuacionesServicio puntuaciones,
+            IFavoritosServicio favoritos,
+            UserManager<Usuario> gestorUsuarios)
         {
             this.sitios = sitios;
             this.categorias = categorias;
             this.comentarios = comentarios;
             this.puntuaciones = puntuaciones;
+            this.favoritos = favoritos;
+            this.gestorUsuarios = gestorUsuarios;
         }
 
         public async Task<IActionResult> Index()
@@ -66,6 +73,7 @@ namespace TripSV.Controllers
 
             var esAdministrador = User.IsInRole(Roles.Administrador);
             var nombreUsuario = User.Identity?.Name ?? string.Empty;
+            var usuarioId = gestorUsuarios.GetUserId(User) ?? string.Empty;
 
             ViewData["Title"] = sitio.Nombre;
 
@@ -74,6 +82,8 @@ namespace TripSV.Controllers
                 Sitio = sitio,
                 Comentarios = await comentarios.ListarPorSitioAsync(id, esAdministrador),
                 MiPuntuacion = await puntuaciones.ObtenerDeUsuarioAsync(id, nombreUsuario),
+                EsFavorito = await favoritos.EsFavoritoAsync(usuarioId, id),
+                TotalFavoritos = await favoritos.ContarPorSitioAsync(id),
                 PuedeParticipar = User.Identity?.IsAuthenticated ?? false,
                 EsAdministrador = esAdministrador,
                 NombreUsuario = nombreUsuario
