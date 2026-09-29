@@ -34,10 +34,32 @@ namespace TripSV.Controllers
             this.gestorUsuarios = gestorUsuarios;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? texto,
+            int? categoriaId,
+            string? ubicacion,
+            decimal? calificacionMinima,
+            string? orden)
         {
-            ViewData["Title"] = "Todos los sitios";
-            return View(await sitios.ListarAsync());
+            orden = orden is SitiosServicio.OrdenPopulares or SitiosServicio.OrdenNombre or SitiosServicio.OrdenRecientes
+                ? orden
+                : SitiosServicio.OrdenCalificacion;
+
+            texto = string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+
+            ViewData["Title"] = texto is null ? "Catálogo de sitios" : $"Resultados para «{texto}»";
+
+            return View(new BusquedaSitiosViewModel
+            {
+                Texto = texto,
+                CategoriaId = categoriaId,
+                Ubicacion = ubicacion,
+                CalificacionMinima = calificacionMinima,
+                Orden = orden,
+                Resultados = await sitios.BuscarAsync(texto, categoriaId, ubicacion, calificacionMinima, orden),
+                Categorias = await categorias.ListarResumenAsync(),
+                Ubicaciones = await sitios.ListarUbicacionesAsync()
+            });
         }
 
         public async Task<IActionResult> MostrarSitios(int? id, string? cat)

@@ -19,6 +19,12 @@ namespace TripSV.Servicios
                 .OrderBy(c => c.Nombre)
                 .ToListAsync();
 
+        public async Task<List<Categoria>> ListarResumenAsync() =>
+            await contexto.Categorias
+                .OrderBy(c => c.Nombre)
+                .Select(c => new Categoria { Id = c.Id, Nombre = c.Nombre })
+                .ToListAsync();
+
         public async Task<List<Categoria>> BuscarAsync(string texto)
         {
             if (string.IsNullOrWhiteSpace(texto))

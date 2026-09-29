@@ -64,6 +64,36 @@ namespace TripSV.ViewModels
         public string? NuevoComentario { get; set; }
     }
 
+    public class BusquedaSitiosViewModel
+    {
+        [Display(Name = "Buscar")]
+        public string? Texto { get; set; }
+
+        [Display(Name = "Categoría")]
+        public int? CategoriaId { get; set; }
+
+        [Display(Name = "Departamento")]
+        public string? Ubicacion { get; set; }
+
+        [Display(Name = "Calificación mínima")]
+        public decimal? CalificacionMinima { get; set; }
+
+        [Display(Name = "Ordenar por")]
+        public string Orden { get; set; } = string.Empty;
+
+        public List<Sitio> Resultados { get; set; } = new();
+
+        public List<Categoria> Categorias { get; set; } = new();
+
+        public List<string> Ubicaciones { get; set; } = new();
+
+        public bool HayFiltros =>
+            !string.IsNullOrWhiteSpace(Texto) ||
+            CategoriaId is > 0 ||
+            !string.IsNullOrWhiteSpace(Ubicacion) ||
+            CalificacionMinima is > 0;
+    }
+
     public class ModeracionViewModel
     {
         public List<Comentario> Comentarios { get; set; } = new();

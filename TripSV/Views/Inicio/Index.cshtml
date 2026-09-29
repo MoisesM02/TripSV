@@ -41,6 +41,23 @@
     </button>
 </div>
 
+<div class="container">
+    <div class="card shadow buscador-inicio">
+        <div class="card-body p-4">
+            <h2 class="h4 mb-3">¿A dónde quiere ir?</h2>
+            <form asp-controller="Sitios" asp-action="Index" method="get" class="row g-2">
+                <div class="col-md-9">
+                    <input type="search" name="texto" class="form-control form-control-lg" maxlength="100"
+                           placeholder="Playas, lagos, volcanes, pueblos..." aria-label="Buscar destinos" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-danger btn-lg w-100">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="container py-5">
     <h2 class="text-center mb-4">Categorías turísticas</h2>
 
