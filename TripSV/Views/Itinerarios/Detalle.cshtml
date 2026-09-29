@@ -1,0 +1,164 @@
+@model ItinerarioDetalleViewModel
+@using TripSV.Servicios
+@{
+    var itinerario = Model.Itinerario;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="no-imprimir">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Mis itinerarios</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@itinerario.Nombre</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+        <div>
+            <h1 class="mb-1">@itinerario.Nombre</h1>
+            <p class="text-muted mb-2">
+                @itinerario.FechaInicio.ToString("dd/MM/yyyy")
+                @if (itinerario.CantidadDias > 1)
+                {
+                    <text>al @itinerario.FechaFin.ToString("dd/MM/yyyy")</text>
+                }
+                · @itinerario.CantidadDias día(s) · @Model.TotalVisitas destino(s)
+            </p>
+            <partial name="_Estado" model="itinerario" />
+        </div>
+        <div class="d-flex gap-2 no-imprimir">
+            <a class="btn btn-outline-primary" asp-action="Editar" asp-route-id="@itinerario.Id">Editar</a>
+            <button type="button" class="btn btn-outline-secondary" onclick="window.print()">Imprimir</button>
+            <form asp-action="Eliminar" method="post"
+                  onsubmit="return confirm('¿Eliminar este itinerario y todos sus destinos planificados?');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@itinerario.Id" />
+                <button type="submit" class="btn btn-outline-danger">Eliminar</button>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(itinerario.Notas))
+    {
+        <div class="alert alert-light border mt-3">@itinerario.Notas</div>
+    }
+
+    @foreach (var dia in Model.Dias)
+    {
+        <div class="card dia-itinerario mt-4" id="dia-@dia.Numero">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    Día @dia.Numero
+                    <small class="text-muted fw-normal ms-2 primera-mayuscula">@FechaHora.FormatearDia(dia.Fecha)</small>
+                </h5>
+                <span class="badge bg-secondary">@dia.Visitas.Count / @Itinerario.MaximoVisitasPorDia</span>
+            </div>
+
+            <ul class="list-group list-group-flush">
+                @if (dia.Visitas.Count == 0)
+                {
+                    <li class="list-group-item text-muted">Todavía no hay destinos para este día.</li>
+                }
+
+                @for (var i = 0; i < dia.Visitas.Count; i++)
+                {
+                    var visita = dia.Visitas[i];
+                    <li class="list-group-item visita">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <span class="orden-visita">@visita.Orden</span>
+                            <img src="@Url.Action("Imagen", "Sitios", new { id = visita.SitioId })" alt="@visita.Sitio?.Nombre"
+                                 width="72" height="54" class="rounded object-fit-cover" />
+                            <div class="flex-grow-1">
+                                <a class="fw-bold" asp-controller="Sitios" asp-action="Detalle" asp-route-id="@visita.SitioId">@visita.Sitio?.Nombre</a>
+                                <div class="small text-muted">
+                                    @visita.Sitio?.Ubicacion ·
+                                    <span class="primera-mayuscula">@visita.Sitio?.Categoria?.Nombre</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(visita.Notas))
+                                {
+                                    <div class="small fst-italic">@visita.Notas</div>
+                                }
+                            </div>
+
+                            <div class="d-flex flex-wrap align-items-center gap-1 no-imprimir">
+                                <form asp-action="MoverVisita" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="visitaId" value="@visita.Id" />
+                                    <input type="hidden" name="itinerarioId" value="@itinerario.Id" />
+                                    <input type="hidden" name="dia" value="@dia.Numero" />
+                                    <input type="hidden" name="desplazamiento" value="-1" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Subir" disabled="@(i == 0)">&#9650;</button>
+                                </form>
+                                <form asp-action="MoverVisita" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="visitaId" value="@visita.Id" />
+                                    <input type="hidden" name="itinerarioId" value="@itinerario.Id" />
+                                    <input type="hidden" name="dia" value="@dia.Numero" />
+                                    <input type="hidden" name="desplazamiento" value="1" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Bajar" disabled="@(i == dia.Visitas.Count - 1)">&#9660;</button>
+                                </form>
+                                @if (itinerario.CantidadDias > 1)
+                                {
+                                    <form asp-action="CambiarDia" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="visitaId" value="@visita.Id" />
+                                        <input type="hidden" name="itinerarioId" value="@itinerario.Id" />
+                                        <select name="dia" class="form-select form-select-sm" title="Mover a otro día" onchange="this.form.submit()">
+                                            @for (var numero = 1; numero <= itinerario.CantidadDias; numero++)
+                                            {
+                                                <option value="@numero" selected="@(numero == dia.Numero)">Día @numero</option>
+                                            }
+                                        </select>
+                                    </form>
+                                }
+                                <form asp-action="QuitarVisita" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="visitaId" value="@visita.Id" />
+                                    <input type="hidden" name="itinerarioId" value="@itinerario.Id" />
+                                    <input type="hidden" name="dia" value="@dia.Numero" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+
+            @if (dia.Visitas.Count < Itinerario.MaximoVisitasPorDia)
+            {
+                <div class="card-body border-top no-imprimir">
+                    <form asp-action="AgregarVisita" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="itinerarioId" value="@itinerario.Id" />
+                        <input type="hidden" name="dia" value="@dia.Numero" />
+                        <div class="col-md-6">
+                            <select name="sitioId" class="form-select" required aria-label="Destino">
+                                <option value="">Agregar un destino a este día...</option>
+                                @if (Model.SitiosFavoritos.Count > 0)
+                                {
+                                    <optgroup label="Mis favoritos">
+                                        @foreach (var sitio in Model.SitiosFavoritos)
+                                        {
+                                            <option value="@sitio.Id">@sitio.Nombre — @sitio.Ubicacion</option>
+                                        }
+                                    </optgroup>
+                                }
+                                <optgroup label="Todos los destinos">
+                                    @foreach (var sitio in Model.OtrosSitios)
+                                    {
+                                        <option value="@sitio.Id">@sitio.Nombre — @sitio.Ubicacion</option>
+                                    }
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="notas" class="form-control" maxlength="200" placeholder="Notas (opcional)" aria-label="Notas" />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-danger w-100">Agregar</button>
+                        </div>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+</div>

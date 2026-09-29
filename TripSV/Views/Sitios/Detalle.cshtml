@@ -58,6 +58,53 @@
                 </div>
             </div>
 
+            @if (Model.PuedeParticipar)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Planificar visita</h5>
+                        @if (Model.MisItinerarios.Count > 0)
+                        {
+                            var primero = Model.MisItinerarios[0];
+                            <form asp-controller="Itinerarios" asp-action="AgregarVisita" method="post" data-planificador>
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                <input type="hidden" name="urlRetorno" value="@Url.Action("Detalle", "Sitios", new { id = sitio.Id })" />
+                                <div class="mb-2">
+                                    <label class="form-label" for="itinerarioId">Itinerario</label>
+                                    <select class="form-select" id="itinerarioId" name="itinerarioId">
+                                        @foreach (var itinerario in Model.MisItinerarios)
+                                        {
+                                            <option value="@itinerario.Id" data-dias="@itinerario.CantidadDias"
+                                                    data-inicio="@itinerario.FechaInicio.ToString("yyyy-MM-dd")">@itinerario.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="dia">Día</label>
+                                    <select class="form-select" id="dia" name="dia">
+                                        @for (var numero = 1; numero <= primero.CantidadDias; numero++)
+                                        {
+                                            <option value="@numero">Día @numero (@primero.FechaInicio.AddDays(numero - 1).ToString("dd/MM"))</option>
+                                        }
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger w-100">Agregar al itinerario</button>
+                            </form>
+                            <div class="text-center mt-2">
+                                <a asp-controller="Itinerarios" asp-action="Crear" asp-route-sitioId="@sitio.Id">o crear un itinerario nuevo</a>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Organice qué día va a visitar cada destino de su viaje.</p>
+                            <a class="btn btn-outline-danger w-100" asp-controller="Itinerarios" asp-action="Crear"
+                               asp-route-sitioId="@sitio.Id">Crear itinerario con este destino</a>
+                        }
+                    </div>
+                </div>
+            }
+
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Calificación</h5>
@@ -224,3 +271,32 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-planificador]').forEach(function (formulario) {
+            var itinerario = formulario.querySelector('select[name="itinerarioId"]');
+            var dia = formulario.querySelector('select[name="dia"]');
+
+            function actualizarDias() {
+                var opcion = itinerario.options[itinerario.selectedIndex];
+                var cantidad = parseInt(opcion.getAttribute('data-dias'), 10) || 1;
+                var inicio = new Date(opcion.getAttribute('data-inicio') + 'T00:00:00');
+
+                dia.innerHTML = '';
+                for (var numero = 1; numero <= cantidad; numero++) {
+                    var fecha = new Date(inicio);
+                    fecha.setDate(inicio.getDate() + numero - 1);
+                    var elemento = document.createElement('option');
+                    elemento.value = numero;
+                    elemento.textContent = 'Día ' + numero + ' (' +
+                        String(fecha.getDate()).padStart(2, '0') + '/' +
+                        String(fecha.getMonth() + 1).padStart(2, '0') + ')';
+                    dia.appendChild(elemento);
+                }
+            }
+
+            itinerario.addEventListener('change', actualizarDias);
+        });
+    </script>
+}

@@ -1,0 +1,18 @@
+@model Itinerario
+@using TripSV.Servicios
+@{
+    var hoy = FechaHora.Hoy;
+}
+@if (hoy < Model.FechaInicio)
+{
+    var faltan = (Model.FechaInicio - hoy).Days;
+    <span class="badge bg-primary">Próximo · faltan @faltan día(s)</span>
+}
+else if (hoy <= Model.FechaFin)
+{
+    <span class="badge bg-success">En curso · día @((hoy - Model.FechaInicio).Days + 1) de @Model.CantidadDias</span>
+}
+else
+{
+    <span class="badge bg-secondary">Finalizado</span>
+}

@@ -19,6 +19,19 @@ namespace TripSV.Servicios
                 .OrderBy(s => s.Nombre)
                 .ToListAsync();
 
+        public async Task<List<Sitio>> ListarResumenAsync() =>
+            await contexto.Sitios
+                .OrderBy(s => s.Nombre)
+                .Select(s => new Sitio
+                {
+                    Id = s.Id,
+                    Nombre = s.Nombre,
+                    Ubicacion = s.Ubicacion,
+                    CategoriaId = s.CategoriaId,
+                    Categoria = new Categoria { Id = s.Categoria!.Id, Nombre = s.Categoria.Nombre }
+                })
+                .ToListAsync();
+
         public async Task<List<Sitio>> ListarPorCategoriaAsync(int categoriaId) =>
             await contexto.Sitios
                 .Include(s => s.Categoria)

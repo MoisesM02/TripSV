@@ -1,0 +1,19 @@
+@model ItinerarioFormularioViewModel
+
+<div class="container py-4">
+    <h1 class="mb-4">Editar itinerario</h1>
+
+    <form asp-action="Editar" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <partial name="_Formulario" model="Model" />
+
+        <button type="submit" class="btn btn-danger">Guardar cambios</button>
+        <a class="btn btn-secondary" asp-action="Detalle" asp-route-id="@Model.Id">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

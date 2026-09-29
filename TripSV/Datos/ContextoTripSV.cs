@@ -21,6 +21,10 @@ namespace TripSV.Datos
 
         public DbSet<Favorito> Favoritos => Set<Favorito>();
 
+        public DbSet<Itinerario> Itinerarios => Set<Itinerario>();
+
+        public DbSet<Visita> Visitas => Set<Visita>();
+
         protected override void OnModelCreating(ModelBuilder modelo)
         {
             base.OnModelCreating(modelo);

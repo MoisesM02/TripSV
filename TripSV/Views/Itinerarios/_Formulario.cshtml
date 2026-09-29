@@ -1,0 +1,35 @@
+@model ItinerarioFormularioViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label"></label>
+            <input asp-for="Nombre" class="form-control" placeholder="Por ejemplo: Ruta por occidente" autofocus />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-7 mb-3">
+                <label asp-for="FechaInicio" class="form-label"></label>
+                <input asp-for="FechaInicio" type="date" class="form-control" />
+                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+            </div>
+            <div class="col-sm-5 mb-3">
+                <label asp-for="CantidadDias" class="form-label"></label>
+                <input asp-for="CantidadDias" type="number" min="1" max="@Itinerario.MaximoDias" class="form-control" />
+                <span asp-validation-for="CantidadDias" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label asp-for="Notas" class="form-label"></label>
+            <textarea asp-for="Notas" class="form-control" rows="5" maxlength="500"
+                      placeholder="Presupuesto, transporte, con quién viaja..."></textarea>
+            <span asp-validation-for="Notas" class="text-danger"></span>
+        </div>
+    </div>
+</div>

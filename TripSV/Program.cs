@@ -43,6 +43,7 @@ constructor.Services.AddScoped<ISitiosServicio, SitiosServicio>();
 constructor.Services.AddScoped<IComentariosServicio, ComentariosServicio>();
 constructor.Services.AddScoped<IPuntuacionesServicio, PuntuacionesServicio>();
 constructor.Services.AddScoped<IFavoritosServicio, FavoritosServicio>();
+constructor.Services.AddScoped<IItinerariosServicio, ItinerariosServicio>();
 constructor.Services.AddScoped<SembradorDatos>();
 
 constructor.Services.AddControllersWithViews();

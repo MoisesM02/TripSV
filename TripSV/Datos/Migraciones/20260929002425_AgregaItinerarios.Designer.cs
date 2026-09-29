@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripSV.Datos;
 
@@ -11,9 +12,10 @@ using TripSV.Datos;
 namespace TripSV.Datos.Migraciones
 {
     [DbContext(typeof(ContextoTripSV))]
-    partial class ContextoTripSVModelSnapshot : ModelSnapshot
+    [Migration("20260929002425_AgregaItinerarios")]
+    partial class AgregaItinerarios
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

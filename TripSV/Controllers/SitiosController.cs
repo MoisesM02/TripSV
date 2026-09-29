@@ -13,6 +13,7 @@ namespace TripSV.Controllers
         private readonly IComentariosServicio comentarios;
         private readonly IPuntuacionesServicio puntuaciones;
         private readonly IFavoritosServicio favoritos;
+        private readonly IItinerariosServicio itinerarios;
         private readonly UserManager<Usuario> gestorUsuarios;
 
         public SitiosController(
@@ -21,6 +22,7 @@ namespace TripSV.Controllers
             IComentariosServicio comentarios,
             IPuntuacionesServicio puntuaciones,
             IFavoritosServicio favoritos,
+            IItinerariosServicio itinerarios,
             UserManager<Usuario> gestorUsuarios)
         {
             this.sitios = sitios;
@@ -28,6 +30,7 @@ namespace TripSV.Controllers
             this.comentarios = comentarios;
             this.puntuaciones = puntuaciones;
             this.favoritos = favoritos;
+            this.itinerarios = itinerarios;
             this.gestorUsuarios = gestorUsuarios;
         }
 
@@ -84,6 +87,9 @@ namespace TripSV.Controllers
                 MiPuntuacion = await puntuaciones.ObtenerDeUsuarioAsync(id, nombreUsuario),
                 EsFavorito = await favoritos.EsFavoritoAsync(usuarioId, id),
                 TotalFavoritos = await favoritos.ContarPorSitioAsync(id),
+                MisItinerarios = string.IsNullOrEmpty(usuarioId)
+                    ? new List<Itinerario>()
+                    : await itinerarios.ListarAsync(usuarioId),
                 PuedeParticipar = User.Identity?.IsAuthenticated ?? false,
                 EsAdministrador = esAdministrador,
                 NombreUsuario = nombreUsuario
