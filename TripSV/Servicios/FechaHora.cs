@@ -4,10 +4,17 @@ namespace TripSV.Servicios
     {
         private static readonly TimeZoneInfo ZonaSalvador = ObtenerZona();
 
+        private static readonly System.Globalization.CultureInfo Cultura = new("es-SV");
+
         public static DateTime Ahora => TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ZonaSalvador).DateTime;
 
+        public static DateTime Hoy => Ahora.Date;
+
         public static string Formatear(DateTime fecha) =>
-            fecha.ToString("dd 'de' MMMM 'de' yyyy hh:mm:ss tt", new System.Globalization.CultureInfo("es-SV"));
+            fecha.ToString("dd 'de' MMMM 'de' yyyy hh:mm:ss tt", Cultura);
+
+        public static string FormatearDia(DateTime fecha) =>
+            fecha.ToString("dddd d 'de' MMMM", Cultura);
 
         private static TimeZoneInfo ObtenerZona()
         {

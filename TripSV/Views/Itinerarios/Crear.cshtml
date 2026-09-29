@@ -1,0 +1,28 @@
+@model ItinerarioFormularioViewModel
+
+<div class="container py-4">
+    <h1 class="mb-1">Nuevo itinerario</h1>
+    <p class="text-muted mb-4">Defina las fechas del viaje; después podrá organizar qué destinos visitar cada día.</p>
+
+    @if (!string.IsNullOrWhiteSpace(Model.NombreSitio))
+    {
+        <div class="alert alert-info">
+            <strong>@Model.NombreSitio</strong> se agregará al día 1 del itinerario.
+        </div>
+    }
+
+    <form asp-action="Crear" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="SitioId" />
+        <input type="hidden" asp-for="NombreSitio" />
+
+        <partial name="_Formulario" model="Model" />
+
+        <button type="submit" class="btn btn-danger">Crear itinerario</button>
+        <a class="btn btn-secondary" asp-action="Index">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

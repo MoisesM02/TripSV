@@ -11,5 +11,7 @@ namespace TripSV.Modelos
         public ICollection<Puntuacion> Puntuaciones { get; set; } = new List<Puntuacion>();
 
         public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
+
+        public ICollection<Itinerario> Itinerarios { get; set; } = new List<Itinerario>();
     }
 }

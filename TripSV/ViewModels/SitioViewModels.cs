@@ -50,6 +50,8 @@ namespace TripSV.ViewModels
 
         public int TotalFavoritos { get; set; }
 
+        public List<Itinerario> MisItinerarios { get; set; } = new();
+
         public bool PuedeParticipar { get; set; }
 
         public bool EsAdministrador { get; set; }

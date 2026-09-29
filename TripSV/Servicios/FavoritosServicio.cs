@@ -22,6 +22,12 @@ namespace TripSV.Servicios
                 .ThenByDescending(f => f.Id)
                 .ToListAsync();
 
+        public async Task<List<int>> ObtenerIdsSitiosAsync(string usuarioId) =>
+            await contexto.Favoritos
+                .Where(f => f.UsuarioId == usuarioId)
+                .Select(f => f.SitioId)
+                .ToListAsync();
+
         public async Task<bool> EsFavoritoAsync(string usuarioId, int sitioId)
         {
             if (string.IsNullOrWhiteSpace(usuarioId))
