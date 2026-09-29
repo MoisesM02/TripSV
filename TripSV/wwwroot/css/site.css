@@ -97,3 +97,17 @@ footer .contact-list {
 		text-decoration: none;
 	}
 }
+
+.buscador-inicio {
+	position: relative;
+	z-index: 2;
+	margin-top: -3rem;
+}
+
+.buscador-menu .form-control {
+	min-width: 12rem;
+}
+
+.filtros-busqueda {
+	background-color: #f8f9fa;
+}

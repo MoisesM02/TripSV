@@ -8,6 +8,10 @@ namespace TripSV.Servicios
 
         Task<List<Sitio>> ListarResumenAsync();
 
+        Task<List<Sitio>> BuscarAsync(string? texto, int? categoriaId, string? ubicacion, decimal? calificacionMinima, string? orden);
+
+        Task<List<string>> ListarUbicacionesAsync();
+
         Task<List<Sitio>> ListarPorCategoriaAsync(int categoriaId);
 
         Task<List<Sitio>> ListarPorCategoriaAsync(string categoria);

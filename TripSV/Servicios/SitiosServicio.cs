@@ -6,6 +6,14 @@ namespace TripSV.Servicios
 {
     public class SitiosServicio : ISitiosServicio
     {
+        public const string OrdenCalificacion = "calificacion";
+        public const string OrdenPopulares = "populares";
+        public const string OrdenNombre = "nombre";
+        public const string OrdenRecientes = "recientes";
+
+        private const string Intercalacion = "Latin1_General_CI_AI";
+        private const int MaximoTerminos = 5;
+
         private readonly ContextoTripSV contexto;
 
         public SitiosServicio(ContextoTripSV contexto)
@@ -31,6 +39,94 @@ namespace TripSV.Servicios
                     Categoria = new Categoria { Id = s.Categoria!.Id, Nombre = s.Categoria.Nombre }
                 })
                 .ToListAsync();
+
+        public async Task<List<Sitio>> BuscarAsync(
+            string? texto,
+            int? categoriaId,
+            string? ubicacion,
+            decimal? calificacionMinima,
+            string? orden)
+        {
+            var consulta = contexto.Sitios.AsQueryable();
+
+            var terminos = (texto ?? string.Empty)
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(t => t.Length >= 2)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(MaximoTerminos);
+
+            foreach (var termino in terminos)
+            {
+                consulta = consulta.Where(s =>
+                    EF.Functions.Collate(s.Nombre, Intercalacion).Contains(termino) ||
+                    EF.Functions.Collate(s.Ubicacion, Intercalacion).Contains(termino) ||
+                    EF.Functions.Collate(s.Descripcion, Intercalacion).Contains(termino) ||
+                    EF.Functions.Collate(s.Categoria!.Nombre, Intercalacion).Contains(termino));
+            }
+
+            if (categoriaId is > 0)
+            {
+                consulta = consulta.Where(s => s.CategoriaId == categoriaId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ubicacion))
+            {
+                var departamento = ubicacion.Trim();
+                consulta = consulta.Where(s => EF.Functions.Collate(s.Ubicacion, Intercalacion) == departamento);
+            }
+
+            if (calificacionMinima is > 0)
+            {
+                var minimo = Math.Min(calificacionMinima.Value, 5m);
+                consulta = consulta.Where(s => s.Calificacion >= minimo);
+            }
+
+            consulta = orden switch
+            {
+                OrdenPopulares => consulta
+                    .OrderByDescending(s => s.TotalPuntuaciones)
+                    .ThenByDescending(s => s.Calificacion)
+                    .ThenBy(s => s.Nombre),
+                OrdenNombre => consulta.OrderBy(s => s.Nombre),
+                OrdenRecientes => consulta
+                    .OrderByDescending(s => s.FechaCreacion)
+                    .ThenByDescending(s => s.Id),
+                _ => consulta
+                    .OrderByDescending(s => s.Calificacion)
+                    .ThenByDescending(s => s.TotalPuntuaciones)
+                    .ThenBy(s => s.Nombre)
+            };
+
+            return await consulta
+                .Select(s => new Sitio
+                {
+                    Id = s.Id,
+                    Nombre = s.Nombre,
+                    Descripcion = s.Descripcion,
+                    Ubicacion = s.Ubicacion,
+                    Calificacion = s.Calificacion,
+                    TotalPuntuaciones = s.TotalPuntuaciones,
+                    CategoriaId = s.CategoriaId,
+                    FechaCreacion = s.FechaCreacion,
+                    Categoria = new Categoria { Id = s.Categoria!.Id, Nombre = s.Categoria.Nombre }
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> ListarUbicacionesAsync()
+        {
+            var ubicaciones = await contexto.Sitios
+                .Select(s => s.Ubicacion)
+                .ToListAsync();
+
+            return ubicaciones
+                .Where(u => !string.IsNullOrWhiteSpace(u))
+                .Select(u => u.Trim())
+                .GroupBy(u => u, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => g.OrderBy(u => u, StringComparer.Ordinal).First())
+                .OrderBy(u => u, StringComparer.CurrentCulture)
+                .ToList();
+        }
 
         public async Task<List<Sitio>> ListarPorCategoriaAsync(int categoriaId) =>
             await contexto.Sitios

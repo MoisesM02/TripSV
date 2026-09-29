@@ -6,6 +6,8 @@ namespace TripSV.Servicios
     {
         Task<List<Categoria>> ListarAsync();
 
+        Task<List<Categoria>> ListarResumenAsync();
+
         Task<List<Categoria>> BuscarAsync(string texto);
 
         Task<Categoria?> ObtenerAsync(int id);
