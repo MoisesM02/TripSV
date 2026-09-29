@@ -54,3 +54,12 @@ footer .contact-list {
 .primera-mayuscula::first-letter {
 	text-transform: uppercase;
 }
+
+.corazon {
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.corazon.activo {
+	color: #dc3545;
+}

@@ -22,6 +22,42 @@
             <img class="img-fluid rounded" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })" alt="@sitio.Nombre" />
         </div>
         <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Favoritos</h5>
+                    <p class="text-muted">@Model.TotalFavoritos persona(s) guardaron este destino.</p>
+
+                    @if (Model.PuedeParticipar)
+                    {
+                        <form asp-controller="Favoritos" asp-action="Alternar" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sitioId" value="@sitio.Id" />
+                            <input type="hidden" name="urlRetorno" value="@Url.Action("Detalle", "Sitios", new { id = sitio.Id })" />
+                            @if (Model.EsFavorito)
+                            {
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <span class="corazon activo">&#9829;</span> Quitar de mis favoritos
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <span class="corazon">&#9825;</span> Guardar en mis favoritos
+                                </button>
+                            }
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            Debe <a asp-controller="Cuenta" asp-action="IniciarSesion"
+                                    asp-route-urlRetorno="@Url.Action("Detalle", "Sitios", new { id = sitio.Id })">iniciar sesión</a>
+                            para guardar este destino.
+                        </div>
+                    }
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Calificación</h5>
