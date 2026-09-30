@@ -1,0 +1,25 @@
+@model int
+@{
+    var (icono, titulo, mensaje) = Model switch
+    {
+        404 => ("bi-compass", "No encontramos esta página", "Puede que el enlace esté mal escrito o que el contenido ya no exista."),
+        403 => ("bi-shield-lock", "No tiene permiso para ver esto", "Esta sección está reservada para otro tipo de usuario."),
+        400 => ("bi-exclamation-diamond", "La solicitud no es válida", "Revise los datos enviados e intente de nuevo."),
+        _ => ("bi-exclamation-triangle", "Ocurrió un problema", "No pudimos completar su solicitud. Intente de nuevo en unos momentos.")
+    };
+}
+
+<div class="container py-5">
+    <div class="card mx-auto text-center" style="max-width: 36rem;">
+        <div class="card-body p-5">
+            <div class="display-4 text-primary mb-3"><i class="bi @icono"></i></div>
+            <span class="antetitulo">Error @Model</span>
+            <h1 class="h3 mb-3">@titulo</h1>
+            <p class="text-muted mb-4">@mensaje</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a class="btn btn-danger" asp-area="" asp-controller="Inicio" asp-action="Index">Ir al inicio</a>
+                <a class="btn btn-outline-primary" asp-area="" asp-controller="Sitios" asp-action="Index">Explorar destinos</a>
+            </div>
+        </div>
+    </div>
+</div>

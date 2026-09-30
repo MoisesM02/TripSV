@@ -1,0 +1,25 @@
+@model Sitio
+
+<div class="card tarjeta-sitio h-100">
+    <div class="tarjeta-imagen">
+        <img src="@Url.Action("Imagen", "Sitios", new { area = "", id = Model.Id })" alt="@Model.Nombre" loading="lazy" />
+        @if (Model.Categoria is not null)
+        {
+            <span class="etiqueta-flotante etiqueta-categoria primera-mayuscula">@Model.Categoria.Nombre</span>
+        }
+        <span class="etiqueta-flotante etiqueta-calificacion">
+            <i class="bi bi-star-fill"></i> @Model.Calificacion.ToString("0.0")
+        </span>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">@Model.Nombre</h5>
+        <div class="ubicacion mb-2"><i class="bi bi-geo-alt"></i> @Model.Ubicacion</div>
+        <p class="line-clamp-2 text-secondary mb-0">@Model.Descripcion</p>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <small class="text-muted">@Model.TotalPuntuaciones calificación(es)</small>
+        <a class="enlace-destino stretched-link" asp-area="" asp-controller="Sitios" asp-action="Detalle" asp-route-id="@Model.Id">
+            Ver destino <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+</div>

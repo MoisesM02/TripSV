@@ -14,10 +14,7 @@ namespace TripSV.Servicios
         }
 
         public async Task<List<Categoria>> ListarAsync() =>
-            await contexto.Categorias
-                .Include(c => c.Sitios)
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
+            await ConConteoDeSitios(contexto.Categorias).ToListAsync();
 
         public async Task<List<Categoria>> ListarResumenAsync() =>
             await contexto.Categorias
@@ -32,11 +29,20 @@ namespace TripSV.Servicios
                 return await ListarAsync();
             }
 
-            return await contexto.Categorias
-                .Where(c => c.Nombre.Contains(texto))
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
+            return await ConConteoDeSitios(contexto.Categorias.Where(c => c.Nombre.Contains(texto))).ToListAsync();
         }
+
+        private static IQueryable<Categoria> ConConteoDeSitios(IQueryable<Categoria> consulta) =>
+            consulta
+                .OrderBy(c => c.Nombre)
+                .Select(c => new Categoria
+                {
+                    Id = c.Id,
+                    Nombre = c.Nombre,
+                    Descripcion = c.Descripcion,
+                    ImagenTipo = c.ImagenTipo,
+                    Sitios = c.Sitios.Select(s => new Sitio { Id = s.Id }).ToList()
+                });
 
         public async Task<Categoria?> ObtenerAsync(int id) =>
             await contexto.Categorias.FirstOrDefaultAsync(c => c.Id == id);
@@ -60,7 +66,11 @@ namespace TripSV.Servicios
             }
 
             contexto.Categorias.Add(categoria);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok("Categoría agregada correctamente.");
         }
 
@@ -88,7 +98,11 @@ namespace TripSV.Servicios
                 return asignacion;
             }
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok("Categoría actualizada correctamente.");
         }
 
@@ -110,7 +124,11 @@ namespace TripSV.Servicios
             }
 
             contexto.Categorias.Remove(categoria);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok("Categoría eliminada correctamente.");
         }
 

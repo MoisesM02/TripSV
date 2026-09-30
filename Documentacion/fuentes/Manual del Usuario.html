@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Manual del Usuario - Trips SV</title>
+    <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+
+<section class="portada">
+    <div>
+        <div class="institucion">Universidad Don Bosco · Desarrollo de Software Empresarial · Grupo teórico G01T</div>
+    </div>
+    <div>
+        <div class="marca"><span>&#9679;</span>Trips SV</div>
+        <div class="banda"></div>
+        <p class="titulo">Manual del Usuario</p>
+        <p class="subtitulo">Guía paso a paso para visitantes, usuarios registrados y administradores</p>
+        <table>
+            <tr><th>Integrante</th><th>Carné</th></tr>
+            <tr><td>Alberto Ramos Cruz</td><td>RC220772</td></tr>
+            <tr><td>Moises Alonso Marroquin Ayala</td><td>MA220150</td></tr>
+            <tr><td>Rene Eduardo Hernandez Castro</td><td>HC220857</td></tr>
+            <tr><td>Rafael Adolfo Ruiz García</td><td>RG210380</td></tr>
+        </table>
+    </div>
+    <div class="institucion">San Salvador, 30 de septiembre de 2026</div>
+</section>
+
+<h1>Contenido</h1>
+<div class="indice">
+    <ol>
+        <li>Introducción</li>
+        <li>Navegación general</li>
+        <li>Explorar destinos (todos los usuarios)</li>
+        <li>Crear una cuenta e iniciar sesión</li>
+        <li>Funciones del usuario registrado</li>
+        <li>Planificador de viajes</li>
+        <li>Funciones del administrador</li>
+        <li>Mensajes y errores</li>
+        <li>Preguntas frecuentes</li>
+    </ol>
+</div>
+
+<h1>1. Introducción</h1>
+<p>
+    <strong>Trips SV</strong> es un sitio web para descubrir los destinos turísticos de El Salvador: playas, lagos,
+    montañas, sitios arqueológicos, pueblos y más. Puede explorar el catálogo sin registrarse; con una cuenta,
+    además puede calificar destinos, publicar reseñas, guardar favoritos y planificar sus viajes.
+</p>
+<h2>1.1 Tipos de usuario</h2>
+<table>
+    <tr><th>Tipo</th><th>Qué puede hacer</th></tr>
+    <tr><td><strong>Visitante</strong> (sin iniciar sesión)</td><td>Ver categorías y destinos, buscar, leer calificaciones y reseñas.</td></tr>
+    <tr><td><strong>Usuario registrado</strong></td><td>Todo lo anterior, más calificar, publicar reseñas, responder, guardar favoritos y crear itinerarios.</td></tr>
+    <tr><td><strong>Administrador</strong></td><td>Todo lo anterior, más administrar categorías y destinos, y moderar comentarios.</td></tr>
+</table>
+<h2>1.2 Requisitos</h2>
+<p>
+    Un navegador actualizado (Microsoft Edge, Google Chrome, Mozilla Firefox o Safari) en computadora, tableta o
+    teléfono. El sitio se adapta automáticamente al tamaño de la pantalla.
+</p>
+
+<h1>2. Navegación general</h1>
+<p>La barra superior está disponible en todas las páginas y permanece visible al desplazarse.</p>
+<figure>
+    <img src="capturas/01-inicio.jpg" alt="Página de inicio" />
+    <figcaption>Figura 1. Página de inicio con la barra de navegación, el buscador y el acceso a la cuenta.</figcaption>
+</figure>
+<table>
+    <tr><th>Elemento</th><th>Función</th></tr>
+    <tr><td>Logo <strong>Trips SV</strong></td><td>Vuelve a la página de inicio desde cualquier lugar.</td></tr>
+    <tr><td><strong>Inicio</strong>, <strong>Categorías</strong>, <strong>Destinos</strong></td><td>Secciones principales. La sección actual aparece resaltada.</td></tr>
+    <tr><td>Cuadro <strong>Buscar destinos</strong></td><td>Busca por nombre, lugar o tipo de destino desde cualquier página.</td></tr>
+    <tr><td><strong>Iniciar sesión</strong> / <strong>Registrarse</strong></td><td>Acceso a la cuenta. Con la sesión iniciada se reemplaza por su nombre de usuario.</td></tr>
+</table>
+<h2>2.1 En el teléfono</h2>
+<p>En pantallas pequeñas, el menú se agrupa en el botón de tres líneas de la esquina superior derecha.</p>
+<figure class="movil">
+    <img src="capturas/22-inicio-movil.jpg" alt="Inicio en teléfono" />
+    <figcaption>Figura 2. Vista en un teléfono.</figcaption>
+</figure>
+
+<h1>3. Explorar destinos</h1>
+<h2>3.1 Por categoría</h2>
+<ol class="pasos">
+    <li>En la página de inicio, desplácese hasta <strong>¿Qué tipo de viaje busca?</strong>, o haga clic en <strong>Categorías</strong> en la barra superior.</li>
+    <li>Cada tarjeta muestra el nombre de la categoría y cuántos destinos tiene.</li>
+    <li>Haga clic en una tarjeta para ver sus destinos, ordenados de mejor a peor calificado.</li>
+</ol>
+<figure>
+    <img src="capturas/02-inicio-categorias.jpg" alt="Categorías en el inicio" />
+    <figcaption>Figura 3. Categorías en la página de inicio.</figcaption>
+</figure>
+<figure>
+    <img src="capturas/03-categorias.jpg" alt="Página de categorías" />
+    <figcaption>Figura 4. Página de categorías.</figcaption>
+</figure>
+
+<h2>3.2 Buscar y filtrar</h2>
+<ol class="pasos">
+    <li>Escriba lo que busca en el cuadro de búsqueda (por ejemplo, <em>lago</em>, <em>playa</em> o <em>Santa Ana</em>) y presione <strong>Buscar</strong>.</li>
+    <li>En la página <strong>Destinos</strong> puede combinar filtros: <strong>Categoría</strong>, <strong>Departamento</strong> y <strong>Calificación</strong> mínima.</li>
+    <li>Use <strong>Ordenar por</strong> para ver primero los mejor calificados, los más votados, por nombre o los más recientes.</li>
+    <li>Presione <strong>Limpiar filtros</strong> para volver al catálogo completo.</li>
+</ol>
+<div class="nota">No importa si escribe con o sin tildes ni mayúsculas: <em>ceren</em> encuentra <em>Joya de Cerén</em>. Si escribe varias palabras, se muestran los destinos que coinciden con todas.</div>
+<figure>
+    <img src="capturas/04-catalogo-busqueda.jpg" alt="Catálogo con búsqueda" />
+    <figcaption>Figura 5. Catálogo de destinos con la búsqueda "lago" ordenada por nombre.</figcaption>
+</figure>
+
+<h2>3.3 Ver el detalle de un destino</h2>
+<p>
+    Haga clic en cualquier tarjeta de destino. El detalle muestra la ubicación, la categoría, la calificación promedio,
+    cuántas personas lo guardaron en favoritos, una descripción, la foto y la información completa (horarios,
+    recomendaciones y mapa, según el destino).
+</p>
+<figure>
+    <img src="capturas/05-detalle-sitio.jpg" alt="Detalle de un destino" />
+    <figcaption>Figura 6. Detalle de un destino visto por un visitante.</figcaption>
+</figure>
+<h2>3.4 Leer las reseñas</h2>
+<p>Al final del detalle están las <strong>Reseñas de la comunidad</strong>, con las respuestas agrupadas debajo de cada reseña.</p>
+<figure>
+    <img src="capturas/06-detalle-resenas.jpg" alt="Reseñas de un destino" />
+    <figcaption>Figura 7. Reseñas de la comunidad. Para publicar hay que iniciar sesión.</figcaption>
+</figure>
+
+<h1>4. Crear una cuenta e iniciar sesión</h1>
+<h2>4.1 Registrarse</h2>
+<ol class="pasos">
+    <li>Haga clic en <strong>Registrarse</strong> en la barra superior.</li>
+    <li>Escriba un <strong>usuario</strong> (de 4 a 24 caracteres) y su <strong>correo</strong>.</li>
+    <li>Escriba una <strong>contraseña</strong> de al menos 8 caracteres que incluya un número y una letra minúscula, y repítala en <strong>Confirmar contraseña</strong>.</li>
+    <li>Presione <strong>Crear</strong>. Si todo es correcto, el sistema lo lleva a iniciar sesión.</li>
+</ol>
+<figure>
+    <img src="capturas/07-registro.jpg" alt="Formulario de registro" />
+    <figcaption>Figura 8. Formulario de registro.</figcaption>
+</figure>
+<h2>4.2 Iniciar sesión</h2>
+<ol class="pasos">
+    <li>Haga clic en <strong>Iniciar sesión</strong>.</li>
+    <li>Escriba su usuario y contraseña. Marque <strong>Recordarme</strong> si usa su propio equipo.</li>
+    <li>Presione <strong>Entrar</strong>.</li>
+</ol>
+<div class="aviso">Por seguridad, después de 5 intentos fallidos la cuenta se bloquea durante 10 minutos.</div>
+<figure>
+    <img src="capturas/08-iniciar-sesion.jpg" alt="Inicio de sesión" />
+    <figcaption>Figura 9. Inicio de sesión.</figcaption>
+</figure>
+<h2>4.3 Recuperar la contraseña</h2>
+<ol class="pasos">
+    <li>En la pantalla de inicio de sesión, haga clic en <strong>¿Olvidó su contraseña?</strong></li>
+    <li>Escriba su correo o su nombre de usuario y presione <strong>Generar enlace de recuperación</strong>.</li>
+    <li>Abra el enlace generado, escriba la nueva contraseña dos veces y presione <strong>Cambiar contraseña</strong>.</li>
+</ol>
+<figure>
+    <img src="capturas/09-recuperar-contrasena.jpg" alt="Recuperar contraseña" />
+    <figcaption>Figura 10. Recuperación de contraseña.</figcaption>
+</figure>
+<h2>4.4 Menú de usuario y cierre de sesión</h2>
+<p>
+    Con la sesión iniciada, su nombre aparece en la esquina superior derecha. Al hacer clic se despliega el menú con
+    <strong>Mis favoritos</strong>, <strong>Mis itinerarios</strong> y <strong>Cerrar sesión</strong>.
+</p>
+<figure>
+    <img src="capturas/12-menu-usuario.jpg" alt="Menú de usuario" />
+    <figcaption>Figura 11. Menú de usuario desplegado.</figcaption>
+</figure>
+
+<h1>5. Funciones del usuario registrado</h1>
+<p>Con la sesión iniciada, el detalle de cada destino muestra tres tarjetas a la derecha de la foto.</p>
+<figure>
+    <img src="capturas/10-detalle-usuario.jpg" alt="Detalle con sesión iniciada" />
+    <figcaption>Figura 12. Detalle de un destino con las opciones de favoritos, planificación y calificación.</figcaption>
+</figure>
+
+<h2>5.1 Guardar en favoritos</h2>
+<ol class="pasos">
+    <li>En el detalle del destino, presione <strong>Guardar en mis favoritos</strong>.</li>
+    <li>El botón cambia a <strong>Quitar de mis favoritos</strong>; presiónelo si quiere quitarlo.</li>
+    <li>Consulte todos sus destinos guardados en <strong>Mis favoritos</strong>, desde el menú de usuario.</li>
+</ol>
+<figure>
+    <img src="capturas/13-mis-favoritos.jpg" alt="Mis favoritos" />
+    <figcaption>Figura 13. Mis favoritos, con la fecha en que se guardó cada destino.</figcaption>
+</figure>
+
+<h2>5.2 Calificar un destino</h2>
+<ol class="pasos">
+    <li>En la tarjeta <strong>Calificación</strong> del detalle, elija de 1 a 5 estrellas.</li>
+    <li>Presione <strong>Calificar</strong>. El promedio del destino se actualiza al instante.</li>
+    <li>Si ya lo había calificado, el botón dice <strong>Actualizar mi calificación</strong>: cada usuario tiene una sola calificación por destino.</li>
+</ol>
+
+<h2>5.3 Publicar una reseña y responder</h2>
+<ol class="pasos">
+    <li>En <strong>Reseñas de la comunidad</strong>, escriba su opinión en <strong>Escriba su reseña</strong> y presione <strong>Publicar reseña</strong>.</li>
+    <li>Para responder a otra persona, presione <strong>Responder</strong> debajo de su reseña, escriba y presione <strong>Enviar respuesta</strong>.</li>
+    <li>Puede eliminar sus propias reseñas y respuestas con el botón <strong>Eliminar</strong>.</li>
+</ol>
+<figure>
+    <img src="capturas/11-detalle-publicar-resena.jpg" alt="Responder una reseña" />
+    <figcaption>Figura 14. Una reseña con su respuesta y el cuadro para responder abierto.</figcaption>
+</figure>
+
+<h1>6. Planificador de viajes</h1>
+<p>El planificador le permite organizar qué destinos visitará cada día de un viaje.</p>
+<h2>6.1 Crear un itinerario</h2>
+<ol class="pasos">
+    <li>Abra <strong>Mis itinerarios</strong> desde el menú de usuario y presione <strong>Nuevo itinerario</strong>. También puede empezar desde el detalle de un destino con <strong>Crear itinerario con este destino</strong>.</li>
+    <li>Escriba el <strong>nombre del viaje</strong>, la <strong>fecha de inicio</strong> y la <strong>cantidad de días</strong> (de 1 a 15). Las notas son opcionales.</li>
+    <li>Presione <strong>Crear itinerario</strong>.</li>
+</ol>
+<figure>
+    <img src="capturas/15-nuevo-itinerario.jpg" alt="Nuevo itinerario" />
+    <figcaption>Figura 15. Formulario de nuevo itinerario.</figcaption>
+</figure>
+<figure>
+    <img src="capturas/14-mis-itinerarios.jpg" alt="Mis itinerarios" />
+    <figcaption>Figura 16. Mis itinerarios, con el estado de cada viaje: próximo, en curso o finalizado.</figcaption>
+</figure>
+
+<h2>6.2 Organizar los días</h2>
+<ol class="pasos">
+    <li>Presione <strong>Abrir planificador</strong> en el itinerario. Cada día aparece con su fecha.</li>
+    <li>Para agregar un destino, elíjalo en <strong>Agregar un destino a este día…</strong> (sus favoritos aparecen primero), escriba una nota si quiere y presione <strong>Agregar</strong>.</li>
+    <li>Use las flechas <strong>&#9650;</strong> y <strong>&#9660;</strong> para cambiar el orden de visita dentro del día.</li>
+    <li>Use el selector <strong>Día</strong> de cada destino para moverlo a otro día.</li>
+    <li>Presione <strong>Quitar</strong> para sacarlo del itinerario.</li>
+    <li>Presione <strong>Imprimir</strong> para obtener una versión limpia en papel o PDF.</li>
+</ol>
+<figure>
+    <img src="capturas/16-planificador.jpg" alt="Planificador" />
+    <figcaption>Figura 17. Planificador de un viaje de tres días.</figcaption>
+</figure>
+<div class="nota">
+    También puede agregar un destino a un itinerario desde su página de detalle, con la tarjeta
+    <strong>Planificar visita</strong>: elija el itinerario y el día, y presione <strong>Agregar al itinerario</strong>
+    (figura 12).
+</div>
+<div class="aviso">Cada día admite hasta 10 destinos y no se puede repetir el mismo destino en un día. Para reducir la cantidad de días, primero quite o mueva los destinos de los días que dejarían de existir.</div>
+
+<h1>7. Funciones del administrador</h1>
+<p>Al iniciar sesión como administrador aparece el menú <strong>Administrar</strong> y la etiqueta <strong>Admin</strong> junto al nombre.</p>
+<figure>
+    <img src="capturas/17-menu-administrar.jpg" alt="Menú Administrar" />
+    <figcaption>Figura 18. Menú de administración.</figcaption>
+</figure>
+
+<h2>7.1 Gestionar destinos</h2>
+<ol class="pasos">
+    <li>Abra <strong>Administrar &gt; Modificar sitios</strong> para ver la tabla de destinos con su imagen, calificación, ubicación y categoría.</li>
+    <li>Presione <strong>Editar</strong> para cambiar los datos de un destino, o <strong>Ver</strong> para abrir su página pública.</li>
+    <li>Para eliminar, marque la casilla de uno o varios destinos y presione <strong>Eliminar seleccionados</strong>. Se eliminan también sus reseñas, calificaciones y favoritos.</li>
+</ol>
+<figure>
+    <img src="capturas/18-admin-sitios.jpg" alt="Administrar sitios" />
+    <figcaption>Figura 19. Tabla de destinos.</figcaption>
+</figure>
+<h3>Agregar un destino</h3>
+<ol class="pasos">
+    <li>Abra <strong>Administrar &gt; Agregar sitios</strong>.</li>
+    <li>Complete el nombre, la categoría, la ubicación y una descripción breve.</li>
+    <li>Elija una imagen JPG o PNG de hasta 5 MB.</li>
+    <li>Redacte la información completa en el editor (texto con formato, listas, enlaces, tablas y mapas embebidos de Google Maps).</li>
+    <li>Presione <strong>Agregar sitio</strong>.</li>
+</ol>
+<figure>
+    <img src="capturas/19-admin-agregar-sitio.jpg" alt="Agregar sitio" />
+    <figcaption>Figura 20. Formulario para agregar un destino con el editor de contenido.</figcaption>
+</figure>
+<div class="nota">Por seguridad, el sistema elimina del contenido cualquier código ejecutable y solo conserva mapas de Google Maps y videos de YouTube embebidos.</div>
+
+<h2>7.2 Gestionar categorías</h2>
+<ol class="pasos">
+    <li>Abra <strong>Administrar &gt; Categorías</strong>. Puede buscar por nombre.</li>
+    <li>Presione <strong>Nueva categoría</strong> para crear una, con nombre, descripción e imagen.</li>
+    <li>Use <strong>Editar</strong> o <strong>Eliminar</strong> en cada fila. Una categoría con destinos asociados no se puede eliminar.</li>
+</ol>
+<figure>
+    <img src="capturas/20-admin-categorias.jpg" alt="Administrar categorías" />
+    <figcaption>Figura 21. Administración de categorías.</figcaption>
+</figure>
+
+<h2>7.3 Moderar comentarios</h2>
+<ol class="pasos">
+    <li>Abra <strong>Administrar &gt; Moderación</strong>. Las tarjetas superiores muestran cuántos comentarios están visibles y ocultos.</li>
+    <li>Busque por texto, usuario o sitio, o marque <strong>Mostrar solo ocultos</strong>.</li>
+    <li>Presione <strong>Ocultar</strong> para retirar un comentario de la vista pública sin borrarlo (sus respuestas también se ocultan). Presione <strong>Mostrar</strong> para volver a publicarlo.</li>
+    <li>Presione <strong>Eliminar</strong> para borrarlo definitivamente junto con sus respuestas.</li>
+</ol>
+<figure>
+    <img src="capturas/21-admin-moderacion.jpg" alt="Moderación" />
+    <figcaption>Figura 22. Panel de moderación.</figcaption>
+</figure>
+
+<h1>8. Mensajes y errores</h1>
+<p>
+    Después de cada acción aparece un mensaje en la parte superior: verde si se completó y rojo si hubo un problema,
+    con la explicación (por ejemplo, "Ya existe una categoría con ese nombre"). Los mensajes desaparecen solos después
+    de unos segundos.
+</p>
+<p>Si abre una dirección que no existe, el sitio muestra una página con enlaces para volver:</p>
+<figure>
+    <img src="capturas/23-error-404.jpg" alt="Página no encontrada" />
+    <figcaption>Figura 23. Página no encontrada.</figcaption>
+</figure>
+
+<h1>9. Preguntas frecuentes</h1>
+<h3>¿Necesito una cuenta para ver los destinos?</h3>
+<p>No. Todo el catálogo, las calificaciones y las reseñas son públicos. La cuenta solo es necesaria para participar y para usar favoritos e itinerarios.</p>
+<h3>¿Puedo cambiar mi calificación?</h3>
+<p>Sí. Vuelva a elegir las estrellas y presione <strong>Actualizar mi calificación</strong>; se reemplaza la anterior.</p>
+<h3>¿Otras personas pueden ver mis itinerarios o favoritos?</h3>
+<p>No. Solo usted puede verlos. Lo único público es el número total de personas que guardaron cada destino.</p>
+<h3>¿Por qué desapareció mi reseña?</h3>
+<p>Un administrador pudo haberla ocultado por no cumplir las normas de la comunidad.</p>
+<h3>Mi cuenta dice que está bloqueada.</h3>
+<p>Ocurre después de 5 intentos fallidos de inicio de sesión. Espere 10 minutos o recupere su contraseña.</p>
+
+</body>
+</html>

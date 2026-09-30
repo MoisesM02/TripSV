@@ -17,15 +17,22 @@
 }
 
 <div class="container py-4">
-    <h1 class="mb-3">Catálogo de sitios turísticos</h1>
+    <div class="encabezado-pagina">
+        <span class="antetitulo">Destinos</span>
+        <h1>Catálogo de destinos</h1>
+        <p>Filtre por categoría, departamento o calificación para encontrar su próximo viaje.</p>
+    </div>
 
     <div class="card mb-4 filtros-busqueda">
         <div class="card-body">
             <form asp-action="Index" method="get" class="row g-2 align-items-end">
                 <div class="col-lg-4 col-md-12">
                     <label class="form-label" for="texto">Buscar</label>
-                    <input type="search" id="texto" name="texto" value="@Model.Texto" class="form-control"
-                           placeholder="Nombre, lugar o tipo de destino" maxlength="100" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="search" id="texto" name="texto" value="@Model.Texto" class="form-control"
+                               placeholder="Nombre, lugar o tipo de destino" maxlength="100" />
+                    </div>
                 </div>
                 <div class="col-lg-2 col-md-4">
                     <label class="form-label" for="categoriaId">Categoría</label>
@@ -105,25 +112,11 @@
     }
     else
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach (var sitio in Model.Resultados)
             {
-                <div class="col-lg-4 col-md-6 col-sm-12 p-3">
-                    <div class="card h-100">
-                        <img class="card-img-top" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })"
-                             alt="@sitio.Nombre" height="220" loading="lazy" />
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@sitio.Nombre</h5>
-                            <h6 class="text-muted">@sitio.Ubicacion</h6>
-                            <span class="badge bg-primary primera-mayuscula mb-2 align-self-start">@sitio.Categoria?.Nombre</span>
-                            <partial name="_Estrellas" model="sitio.Calificacion" />
-                            <small class="text-muted">@sitio.TotalPuntuaciones calificación(es)</small>
-                            <div class="line-clamp mt-2">@sitio.Descripcion</div>
-                            <div class="mt-auto pt-3">
-                                <a class="btn btn-danger text-white" asp-action="Detalle" asp-route-id="@sitio.Id">Ver más</a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6 col-lg-4">
+                    <partial name="_TarjetaSitio" model="sitio" />
                 </div>
             }
         </div>

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="TripSV/TripSV.csproj" />
+  <Project Path="TripSV.Pruebas/TripSV.Pruebas.csproj" />
 </Solution>

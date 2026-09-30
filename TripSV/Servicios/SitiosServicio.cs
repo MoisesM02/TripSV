@@ -15,10 +15,12 @@ namespace TripSV.Servicios
         private const int MaximoTerminos = 5;
 
         private readonly ContextoTripSV contexto;
+        private readonly ISanitizadorHtml sanitizador;
 
-        public SitiosServicio(ContextoTripSV contexto)
+        public SitiosServicio(ContextoTripSV contexto, ISanitizadorHtml sanitizador)
         {
             this.contexto = contexto;
+            this.sanitizador = sanitizador;
         }
 
         public async Task<List<Sitio>> ListarAsync() =>
@@ -97,20 +99,7 @@ namespace TripSV.Servicios
                     .ThenBy(s => s.Nombre)
             };
 
-            return await consulta
-                .Select(s => new Sitio
-                {
-                    Id = s.Id,
-                    Nombre = s.Nombre,
-                    Descripcion = s.Descripcion,
-                    Ubicacion = s.Ubicacion,
-                    Calificacion = s.Calificacion,
-                    TotalPuntuaciones = s.TotalPuntuaciones,
-                    CategoriaId = s.CategoriaId,
-                    FechaCreacion = s.FechaCreacion,
-                    Categoria = new Categoria { Id = s.Categoria!.Id, Nombre = s.Categoria.Nombre }
-                })
-                .ToListAsync();
+            return await SinImagen(consulta).ToListAsync();
         }
 
         public async Task<List<string>> ListarUbicacionesAsync()
@@ -129,10 +118,10 @@ namespace TripSV.Servicios
         }
 
         public async Task<List<Sitio>> ListarPorCategoriaAsync(int categoriaId) =>
-            await contexto.Sitios
-                .Include(s => s.Categoria)
-                .Where(s => s.CategoriaId == categoriaId)
-                .OrderByDescending(s => s.Calificacion)
+            await SinImagen(contexto.Sitios
+                    .Where(s => s.CategoriaId == categoriaId)
+                    .OrderByDescending(s => s.Calificacion)
+                    .ThenByDescending(s => s.TotalPuntuaciones))
                 .ToListAsync();
 
         public async Task<List<Sitio>> ListarPorCategoriaAsync(string categoria) =>
@@ -143,12 +132,25 @@ namespace TripSV.Servicios
                 .ToListAsync();
 
         public async Task<List<Sitio>> ListarDestacadosAsync(int cantidad) =>
-            await contexto.Sitios
-                .Include(s => s.Categoria)
-                .OrderByDescending(s => s.Calificacion)
-                .ThenByDescending(s => s.TotalPuntuaciones)
-                .Take(cantidad)
+            await SinImagen(contexto.Sitios
+                    .OrderByDescending(s => s.Calificacion)
+                    .ThenByDescending(s => s.TotalPuntuaciones)
+                    .Take(cantidad))
                 .ToListAsync();
+
+        private static IQueryable<Sitio> SinImagen(IQueryable<Sitio> consulta) =>
+            consulta.Select(s => new Sitio
+            {
+                Id = s.Id,
+                Nombre = s.Nombre,
+                Descripcion = s.Descripcion,
+                Ubicacion = s.Ubicacion,
+                Calificacion = s.Calificacion,
+                TotalPuntuaciones = s.TotalPuntuaciones,
+                CategoriaId = s.CategoriaId,
+                FechaCreacion = s.FechaCreacion,
+                Categoria = new Categoria { Id = s.Categoria!.Id, Nombre = s.Categoria.Nombre }
+            });
 
         public async Task<Sitio?> ObtenerAsync(int id) =>
             await contexto.Sitios
@@ -183,11 +185,16 @@ namespace TripSV.Servicios
             sitio.Imagen = await ValidadorImagen.LeerAsync(imagen!);
             sitio.ImagenTipo = imagen!.ContentType;
             sitio.FechaCreacion = FechaHora.Ahora;
+            sitio.Informacion = sanitizador.Limpiar(sitio.Informacion);
             sitio.Calificacion = 0;
             sitio.TotalPuntuaciones = 0;
 
             contexto.Sitios.Add(sitio);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok("Sitio agregado correctamente.");
         }
 
@@ -215,7 +222,7 @@ namespace TripSV.Servicios
             actual.Descripcion = sitio.Descripcion;
             actual.Ubicacion = sitio.Ubicacion;
             actual.CategoriaId = sitio.CategoriaId;
-            actual.Informacion = sitio.Informacion;
+            actual.Informacion = sanitizador.Limpiar(sitio.Informacion);
 
             if (imagen is not null && imagen.Length > 0)
             {
@@ -229,7 +236,11 @@ namespace TripSV.Servicios
                 actual.ImagenTipo = imagen.ContentType;
             }
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok("Sitio actualizado correctamente.");
         }
 
@@ -258,10 +269,16 @@ namespace TripSV.Servicios
                 .ToList();
 
             contexto.Comentarios.RemoveRange(respuestas);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             contexto.Sitios.RemoveRange(sitios);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se eliminaron {sitios.Count} sitio(s) correctamente.");
         }

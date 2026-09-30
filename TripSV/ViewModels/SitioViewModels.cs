@@ -58,6 +58,8 @@ namespace TripSV.ViewModels
 
         public string NombreUsuario { get; set; } = string.Empty;
 
+        public string? InformacionSegura { get; set; }
+
         [Required(ErrorMessage = "El comentario no puede quedar vacío")]
         [StringLength(1000, MinimumLength = 3, ErrorMessage = "El comentario debe tener entre {2} y {1} caracteres")]
         [Display(Name = "Comentario")]

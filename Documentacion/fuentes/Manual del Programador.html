@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Manual del Programador - Trips SV</title>
+    <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+
+<section class="portada">
+    <div>
+        <div class="institucion">Universidad Don Bosco · Desarrollo de Software Empresarial · Grupo teórico G01T</div>
+    </div>
+    <div>
+        <div class="marca"><span>&#9679;</span>Trips SV</div>
+        <div class="banda"></div>
+        <p class="titulo">Manual del Programador</p>
+        <p class="subtitulo">CMS de promoción turística de El Salvador · Proyecto de Cátedra, Fase 2</p>
+        <table>
+            <tr><th>Integrante</th><th>Carné</th></tr>
+            <tr><td>Alberto Ramos Cruz</td><td>RC220772</td></tr>
+            <tr><td>Moises Alonso Marroquin Ayala</td><td>MA220150</td></tr>
+            <tr><td>Rene Eduardo Hernandez Castro</td><td>HC220857</td></tr>
+            <tr><td>Rafael Adolfo Ruiz García</td><td>RG210380</td></tr>
+        </table>
+    </div>
+    <div class="institucion">San Salvador, 30 de septiembre de 2026</div>
+</section>
+
+<h1>Contenido</h1>
+<div class="indice">
+    <ol>
+        <li>Introducción</li>
+        <li>Arquitectura del sistema</li>
+        <li>Tecnologías utilizadas</li>
+        <li>Estructura del código</li>
+        <li>Modelo de datos</li>
+        <li>Acceso a datos y persistencia</li>
+        <li>Seguridad</li>
+        <li>Manejo de errores y excepciones</li>
+        <li>Rendimiento y escalabilidad</li>
+        <li>Configuración del entorno de desarrollo</li>
+        <li>Guía de despliegue</li>
+        <li>Pruebas automatizadas</li>
+        <li>Flujo de trabajo con Git y GitHub</li>
+        <li>Cómo extender el sistema</li>
+    </ol>
+</div>
+
+<h1>1. Introducción</h1>
+<p>
+    Este manual describe la arquitectura, la base de código y los procedimientos técnicos de <strong>Trips SV</strong>,
+    un sistema de gestión de contenidos (CMS) para la promoción del turismo en El Salvador. Está dirigido a
+    desarrolladores que necesiten mantener, desplegar o ampliar el sistema.
+</p>
+<h2>1.1 Descripción del sistema</h2>
+<p>El sistema reconoce tres niveles de acceso:</p>
+<table>
+    <tr><th>Rol</th><th>Capacidades</th></tr>
+    <tr><td><strong>Visitante anónimo</strong></td><td>Explora categorías y destinos, busca con filtros y lee calificaciones, reseñas y conversaciones de la comunidad, sin poder publicar.</td></tr>
+    <tr><td><strong>Usuario registrado</strong></td><td>Todo lo anterior, más calificar destinos de 1 a 5 estrellas, publicar reseñas, responder a otros usuarios, guardar favoritos y planificar itinerarios de viaje día por día.</td></tr>
+    <tr><td><strong>Administrador</strong></td><td>Todo lo anterior, más la gestión de categorías y destinos (con imagen y contenido enriquecido) y la moderación de comentarios: ocultarlos, volver a mostrarlos o eliminarlos.</td></tr>
+</table>
+
+<h1>2. Arquitectura del sistema</h1>
+<p>
+    Trips SV sigue el patrón <strong>MVC (Modelo–Vista–Controlador)</strong> de ASP.NET Core, organizado en
+    <strong>capas lógicas</strong> (N-capas) dentro de un mismo proyecto web: presentación, negocio y datos. Cada capa
+    solo conoce a la capa inmediatamente inferior a través de interfaces.
+</p>
+
+<div class="capas">
+    <div class="capa"><strong>Presentación</strong><small>Controllers · Areas/Administracion · Views (Razor) · ViewModels · wwwroot</small>Recibe solicitudes HTTP, valida la entrada, aplica autorización y arma la respuesta HTML.</div>
+    <div class="flecha">&#9660; depende de interfaces</div>
+    <div class="capa"><strong>Negocio</strong><small>Servicios (ICategoriasServicio, ISitiosServicio, IComentariosServicio, IPuntuacionesServicio, IFavoritosServicio, IItinerariosServicio, ISanitizadorHtml)</small>Contiene las reglas del dominio y devuelve un <code>Resultado</code> con éxito o mensaje de error.</div>
+    <div class="flecha">&#9660; usa</div>
+    <div class="capa datos"><strong>Datos</strong><small>Modelos · Datos/ContextoTripSV · Datos/Configuraciones · Datos/Migraciones</small>Entity Framework Core mapea las entidades a SQL Server mediante Fluent API y migraciones Code-First.</div>
+    <div class="flecha">&#9660;</div>
+    <div class="capa datos"><strong>SQL Server</strong><small>Base de datos TripSV</small></div>
+</div>
+
+<h2>2.1 Justificación</h2>
+<ul>
+    <li><strong>Renderizado del lado del servidor.</strong> Las páginas públicas del catálogo deben cargar rápido y ser indexables. MVC con Razor genera HTML completo en el servidor sin depender de un cliente pesado en JavaScript.</li>
+    <li><strong>Formularios con validación y protección integradas.</strong> El sistema es intensivo en formularios (reseñas, calificaciones, administración). MVC ofrece enlace de modelos, validación con DataAnnotations en servidor y cliente, y tokens antifalsificación sin trabajo adicional.</li>
+    <li><strong>Controladores delgados y reglas testeables.</strong> Al concentrar la lógica en servicios, las reglas críticas se prueban sin levantar el servidor web (ver sección 12).</li>
+    <li><strong>Separación por rol.</strong> El módulo de administración vive en un <em>Área</em> propia con autorización a nivel de clase, lo que evita exponer por error una acción administrativa.</li>
+    <li><strong>Alternativas descartadas.</strong> MVVM corresponde a clientes de escritorio o SPA con enlace de datos bidireccional, innecesario aquí. Una arquitectura de microservicios agregaría complejidad operativa (varios despliegues, comunicación entre servicios) desproporcionada para el tamaño del dominio y del equipo.</li>
+</ul>
+
+<h2>2.2 Flujo de una solicitud</h2>
+<p>Ejemplo: un usuario califica un destino.</p>
+<ol class="pasos">
+    <li>El navegador envía <code>POST /Puntuaciones/Calificar</code> con el token antifalsificación.</li>
+    <li><code>PuntuacionesController</code> exige sesión iniciada (<code>[Authorize]</code>) y valida el token (<code>[ValidateAntiForgeryToken]</code>).</li>
+    <li>El controlador llama a <code>IPuntuacionesServicio.CalificarAsync</code>, que valida el rango 1–5, crea o actualiza la calificación del usuario y recalcula el promedio del sitio.</li>
+    <li>El servicio devuelve un <code>Resultado</code>; el controlador guarda el mensaje en <code>TempData</code> y redirige al detalle del sitio (patrón Post/Redirect/Get), evitando reenvíos duplicados al recargar.</li>
+</ol>
+
+<h2>2.3 Patrones de diseño y principios SOLID</h2>
+<table>
+    <tr><th>Patrón o principio</th><th>Aplicación en Trips SV</th></tr>
+    <tr><td>Capa de servicios</td><td>Un servicio por módulo del dominio encapsula las reglas de negocio.</td></tr>
+    <tr><td>Inyección de dependencias</td><td>Controladores y servicios reciben sus dependencias por constructor; el contenedor se configura en <code>Program.cs</code>.</td></tr>
+    <tr><td>Unidad de trabajo y repositorio</td><td><code>ContextoTripSV</code> (DbContext) y sus <code>DbSet</code> actúan como unidad de trabajo y repositorios.</td></tr>
+    <tr><td>ViewModel</td><td>Las vistas reciben modelos específicos (por ejemplo <code>SitioDetalleViewModel</code>) en lugar de entidades cuando combinan datos de varias fuentes.</td></tr>
+    <tr><td>Resultado (Result)</td><td>Los servicios devuelven <code>Resultado.Ok(...)</code> o <code>Resultado.Error(...)</code> en vez de lanzar excepciones por errores esperables.</td></tr>
+    <tr><td>Configuración por entidad</td><td>Cada entidad tiene su clase <code>IEntityTypeConfiguration</code>; el contexto las aplica todas con <code>ApplyConfigurationsFromAssembly</code>.</td></tr>
+    <tr><td>Vistas parciales</td><td><code>_TarjetaSitio</code>, <code>_TarjetaCategoria</code>, <code>_Estrellas</code> y <code>_Mensajes</code> reutilizan marcado en varias páginas.</td></tr>
+    <tr><td>S – Responsabilidad única</td><td>Cada servicio atiende un solo módulo; la validación de imágenes y el saneamiento de HTML están en clases separadas.</td></tr>
+    <tr><td>O – Abierto/cerrado</td><td>Agregar una entidad nueva no requiere modificar la configuración de las existentes.</td></tr>
+    <tr><td>L – Sustitución de Liskov</td><td>Las pruebas sustituyen <code>ContextoTripSV</code> por un contexto derivado sobre SQLite sin cambiar los servicios.</td></tr>
+    <tr><td>I – Segregación de interfaces</td><td>Interfaces pequeñas por módulo en lugar de un servicio general.</td></tr>
+    <tr><td>D – Inversión de dependencias</td><td>Los controladores dependen de interfaces (<code>ISitiosServicio</code>), no de implementaciones.</td></tr>
+</table>
+
+<h1>3. Tecnologías utilizadas</h1>
+<table>
+    <tr><th>Componente</th><th>Tecnología</th><th>Versión</th></tr>
+    <tr><td>Plataforma</td><td>.NET (SDK)</td><td>10.0.400</td></tr>
+    <tr><td>Framework web</td><td>ASP.NET Core MVC con Razor</td><td>10.0</td></tr>
+    <tr><td>Acceso a datos</td><td>Entity Framework Core (proveedor SQL Server)</td><td>10.0.12</td></tr>
+    <tr><td>Base de datos</td><td>Microsoft SQL Server (compatible con Express y LocalDB)</td><td>2019 o superior</td></tr>
+    <tr><td>Autenticación</td><td>ASP.NET Core Identity con Entity Framework</td><td>10.0.12</td></tr>
+    <tr><td>Saneamiento de HTML</td><td>HtmlSanitizer (Ganss.Xss)</td><td>9.2.1039</td></tr>
+    <tr><td>Interfaz</td><td>Bootstrap · Bootstrap Icons · Google Fonts (Poppins, Inter)</td><td>5.3.3 · 1.11.3</td></tr>
+    <tr><td>Scripts de cliente</td><td>jQuery · jQuery Validation Unobtrusive</td><td>3.7.1 · 1.21.0</td></tr>
+    <tr><td>Editor de contenido</td><td>CKEditor</td><td>4.14.0</td></tr>
+    <tr><td>Pruebas</td><td>xUnit · EF Core SQLite en memoria</td><td>2.9.3 · 10.0.12</td></tr>
+    <tr><td>Documentación</td><td>Microsoft Playwright (capturas y PDF)</td><td>1.x</td></tr>
+</table>
+
+<h1>4. Estructura del código</h1>
+<pre><code>TripSV.slnx
+TripSV/                          Proyecto web
+├── Program.cs                   Configuración de servicios y canalización HTTP
+├── appsettings.json             Cadena de conexión y usuarios iniciales
+├── Modelos/                     Entidades: Categoria, Sitio, Comentario, Puntuacion,
+│                                Favorito, Itinerario, Visita, Usuario, Roles
+├── Datos/
+│   ├── ContextoTripSV.cs        DbContext (incluye tablas de Identity)
+│   ├── Configuraciones/         Fluent API: tablas, columnas, índices y relaciones
+│   ├── Migraciones/             MigracionInicial, AgregaFavoritos, AgregaItinerarios
+│   ├── Migracion/               Script de carga del catálogo inicial
+│   ├── SembradorDatos.cs        Aplica migraciones y crea roles y usuarios iniciales
+│   └── ExtensionesContexto.cs   Guardado con manejo de conflictos
+├── Servicios/                   Reglas de negocio (interfaz + implementación)
+├── ViewModels/                  Modelos de vista y formularios
+├── Controllers/                 Inicio, Categorias, Sitios, Comentarios, Puntuaciones,
+│                                Favoritos, Itinerarios, Cuenta
+├── Areas/Administracion/        Categorias, Sitios y Moderacion (rol Administrador)
+├── Views/                       Vistas Razor y parciales compartidas
+└── wwwroot/                     CSS, JavaScript, imágenes y librerías
+TripSV.Pruebas/                  Pruebas automatizadas (xUnit)
+Herramientas/                    Utilidades: generación de documentación y del script de datos
+Documentacion/                   Manuales en PDF y sus fuentes
+Ejecutable/                      Aplicación publicada lista para ejecutar</code></pre>
+
+<h2>4.1 Controladores y rutas principales</h2>
+<table>
+    <tr><th>Controlador</th><th>Acceso</th><th>Responsabilidad</th></tr>
+    <tr><td><code>InicioController</code></td><td>Público</td><td>Página de inicio, página de error y páginas de estado (404, 403).</td></tr>
+    <tr><td><code>CategoriasController</code></td><td>Público</td><td>Listado de categorías e imagen de cada categoría.</td></tr>
+    <tr><td><code>SitiosController</code></td><td>Público</td><td>Catálogo con búsqueda y filtros, destinos por categoría, detalle e imagen de cada destino.</td></tr>
+    <tr><td><code>CuentaController</code></td><td>Público</td><td>Registro, inicio y cierre de sesión, recuperación de contraseña y acceso denegado.</td></tr>
+    <tr><td><code>ComentariosController</code></td><td>Usuario</td><td>Publicar reseñas y respuestas, eliminar las propias.</td></tr>
+    <tr><td><code>PuntuacionesController</code></td><td>Usuario</td><td>Calificar un destino.</td></tr>
+    <tr><td><code>FavoritosController</code></td><td>Usuario</td><td>Guardar y quitar destinos favoritos, listar los propios.</td></tr>
+    <tr><td><code>ItinerariosController</code></td><td>Usuario</td><td>Crear, editar y eliminar itinerarios; agregar, ordenar, mover y quitar visitas.</td></tr>
+    <tr><td><code>Administracion/Categorias</code></td><td>Administrador</td><td>CRUD de categorías con imagen.</td></tr>
+    <tr><td><code>Administracion/Sitios</code></td><td>Administrador</td><td>CRUD de destinos con imagen y contenido enriquecido; eliminación múltiple.</td></tr>
+    <tr><td><code>Administracion/Moderacion</code></td><td>Administrador</td><td>Buscar, ocultar, mostrar y eliminar comentarios y respuestas.</td></tr>
+</table>
+
+<h2>4.2 Servicios</h2>
+<table>
+    <tr><th>Servicio</th><th>Reglas principales</th></tr>
+    <tr><td><code>CategoriasServicio</code></td><td>Nombre único; no se elimina una categoría con destinos asociados; listado con conteo de destinos sin cargar imágenes.</td></tr>
+    <tr><td><code>SitiosServicio</code></td><td>Nombre único; imagen obligatoria al crear; contenido enriquecido saneado; búsqueda tolerante a tildes y mayúsculas con varias palabras.</td></tr>
+    <tr><td><code>ComentariosServicio</code></td><td>Hilos de un nivel (una respuesta a una respuesta se agrupa bajo el comentario original); solo el autor o un administrador elimina; ocultar un comentario oculta sus respuestas.</td></tr>
+    <tr><td><code>PuntuacionesServicio</code></td><td>Una calificación por usuario y destino (se actualiza si ya existe); promedio redondeado a un decimal.</td></tr>
+    <tr><td><code>FavoritosServicio</code></td><td>Alterna agregar o quitar; un favorito por usuario y destino.</td></tr>
+    <tr><td><code>ItinerariosServicio</code></td><td>Hasta 15 días por viaje y 10 destinos por día; sin duplicados en el mismo día; orden consecutivo; cada usuario solo accede a sus itinerarios.</td></tr>
+    <tr><td><code>SanitizadorHtml</code></td><td>Elimina scripts, eventos y enlaces peligrosos; solo permite <code>iframe</code> de Google Maps y YouTube.</td></tr>
+    <tr><td><code>ValidadorImagen</code></td><td>Formatos JPG, JPEG y PNG; máximo 5 MB.</td></tr>
+</table>
+
+<h1>5. Modelo de datos</h1>
+<table>
+    <tr><th>Tabla</th><th>Entidad</th><th>Contenido</th><th>Restricciones destacadas</th></tr>
+    <tr><td><code>categorias</code></td><td>Categoria</td><td>Nombre, descripción e imagen</td><td>Nombre único</td></tr>
+    <tr><td><code>sitios</code></td><td>Sitio</td><td>Destino con imagen, ubicación, contenido enriquecido, calificación promedio y total de calificaciones</td><td>Nombre único; FK a categoría (sin borrado en cascada)</td></tr>
+    <tr><td><code>comentarios</code></td><td>Comentario</td><td>Reseñas y respuestas, autor, fecha y bandera de moderación <code>oculto</code></td><td>FK a sitio (cascada), autorreferencia <code>respuesta_a_id</code></td></tr>
+    <tr><td><code>puntuaciones</code></td><td>Puntuacion</td><td>Calificación de 1 a 5</td><td>Única por (sitio, usuario); CHECK 1–5</td></tr>
+    <tr><td><code>favoritos</code></td><td>Favorito</td><td>Destino guardado por un usuario</td><td>Único por (usuario, sitio)</td></tr>
+    <tr><td><code>itinerarios</code></td><td>Itinerario</td><td>Viaje: nombre, fecha de inicio, cantidad de días y notas</td><td>CHECK de 1 a 15 días</td></tr>
+    <tr><td><code>visitas</code></td><td>Visita</td><td>Destino planificado para un día del itinerario, con orden y notas</td><td>Única por (itinerario, día, sitio); CHECK de día</td></tr>
+    <tr><td><code>usuarios</code>, <code>roles</code>, <code>usuarios_roles</code> y demás</td><td>Identity</td><td>Cuentas, contraseñas cifradas y roles</td><td>Tablas estándar de ASP.NET Core Identity renombradas al español</td></tr>
+</table>
+
+<h2>5.1 Reglas de borrado</h2>
+<table>
+    <tr><th>Al eliminar…</th><th>Efecto</th></tr>
+    <tr><td>Un destino</td><td>Se eliminan en cascada sus comentarios, calificaciones, favoritos y visitas planificadas.</td></tr>
+    <tr><td>Una categoría</td><td>Se impide si tiene destinos asociados.</td></tr>
+    <tr><td>Un usuario</td><td>Se eliminan sus favoritos e itinerarios; sus comentarios y calificaciones se conservan con el nombre del autor.</td></tr>
+    <tr><td>Un itinerario</td><td>Se eliminan sus visitas.</td></tr>
+    <tr><td>Un comentario</td><td>El servicio elimina primero sus respuestas.</td></tr>
+</table>
+
+<h1>6. Acceso a datos y persistencia</h1>
+<h2>6.1 Entity Framework Core Code-First</h2>
+<p>
+    El esquema se define en C# (entidades y clases de configuración) y se materializa con migraciones. Las tablas y
+    columnas usan nombres en español en formato <code>snake_case</code> mediante Fluent API. Al iniciar, la aplicación
+    ejecuta <code>SembradorDatos</code>, que aplica automáticamente las migraciones pendientes y crea los roles y los
+    usuarios iniciales si no existen.
+</p>
+<pre><code>dotnet ef migrations add NombreDeLaMigracion --project TripSV --output-dir Datos/Migraciones
+dotnet ef database update --project TripSV</code></pre>
+
+<h2>6.2 Cadena de conexión segura</h2>
+<p>
+    La cadena incluida en <code>appsettings.json</code> usa <strong>autenticación integrada de Windows</strong>
+    (<code>Trusted_Connection=True</code>), por lo que no contiene usuario ni contraseña. Para otros entornos se
+    sobrescribe sin modificar archivos del repositorio:
+</p>
+<table>
+    <tr><th>Entorno</th><th>Mecanismo</th><th>Ejemplo</th></tr>
+    <tr><td>Desarrollo</td><td>User Secrets (fuera del repositorio)</td><td><code>dotnet user-secrets set "ConnectionStrings:ConexionTripSV" "Server=...;" --project TripSV</code></td></tr>
+    <tr><td>Producción</td><td>Variable de entorno</td><td><code>ConnectionStrings__ConexionTripSV=Server=...;User Id=...;Password=...;Encrypt=True</code></td></tr>
+</table>
+<div class="aviso">
+    <code>TrustServerCertificate=True</code> es adecuado solo para desarrollo local. En producción use un certificado válido en SQL Server y <code>Encrypt=True</code>.
+</div>
+
+<h2>6.3 Uso eficiente de la persistencia</h2>
+<ul>
+    <li><strong>Proyecciones sin imágenes.</strong> Los listados (inicio, catálogo, categorías, desplegables) seleccionan solo las columnas necesarias; las imágenes se sirven aparte desde <code>/Sitios/Imagen/{id}</code> con caché HTTP de una hora y carga diferida en el navegador.</li>
+    <li><strong>Conteos en la base de datos.</strong> El número de destinos por categoría se obtiene en la misma consulta, sin cargar los destinos completos.</li>
+    <li><strong>Índices.</strong> Índices únicos que además garantizan las reglas de negocio, e índices en todas las claves foráneas.</li>
+    <li><strong>Valores precalculados.</strong> La calificación promedio y el total de calificaciones se guardan en <code>sitios</code> y se recalculan solo cuando cambia una calificación.</li>
+    <li><strong>Consultas sin seguimiento.</strong> Los listados usan proyecciones o <code>AsNoTracking</code>, que no generan seguimiento de cambios en el contexto.</li>
+</ul>
+
+<h2>6.4 Datos iniciales</h2>
+<p>
+    <code>TripSV/Datos/Migracion/datos-mysql.sql</code> carga el catálogo de arranque: categorías, destinos con sus
+    imágenes, reseñas y calificaciones. Se ejecuta una sola vez después de crear la base de datos y se detiene si las
+    tablas ya contienen información:
+</p>
+<pre><code>sqlcmd -S localhost -d TripSV -E -i TripSV/Datos/Migracion/datos-mysql.sql</code></pre>
+
+<h1>7. Seguridad</h1>
+<table>
+    <tr><th>Amenaza o requisito</th><th>Medida implementada</th></tr>
+    <tr><td>Autenticación</td><td>ASP.NET Core Identity. Contraseñas cifradas con PBKDF2 y sal aleatoria; mínimo 8 caracteres con al menos un número y una minúscula; bloqueo de 10 minutos tras 5 intentos fallidos.</td></tr>
+    <tr><td>Autorización</td><td>Roles <code>Administrador</code> y <code>Usuario</code>. <code>[Authorize(Roles = "Administrador")]</code> en todo el área de administración y <code>[Authorize]</code> en los módulos de usuario. Verificado con pruebas automatizadas.</td></tr>
+    <tr><td>Sesión</td><td>Cookie <code>HttpOnly</code> con <code>SameSite=Lax</code>, expiración deslizante de 90 minutos.</td></tr>
+    <tr><td>Falsificación de solicitudes (CSRF)</td><td><code>[ValidateAntiForgeryToken]</code> en todas las acciones POST (una prueba automatizada recorre todos los controladores).</td></tr>
+    <tr><td>Inyección SQL</td><td>Todo el acceso a datos usa consultas parametrizadas de Entity Framework; no hay SQL concatenado.</td></tr>
+    <tr><td>Cross-site scripting (XSS)</td><td>Razor codifica toda la salida. El único HTML enriquecido (contenido de destinos) se sanea con HtmlSanitizer al guardar y al mostrar.</td></tr>
+    <tr><td>Acceso a datos ajenos</td><td>Toda consulta de favoritos e itinerarios filtra por el usuario autenticado; un identificador ajeno responde como inexistente.</td></tr>
+    <tr><td>Redirección abierta</td><td>Los parámetros de retorno se validan con <code>Url.IsLocalUrl</code>.</td></tr>
+    <tr><td>Carga de archivos</td><td>Solo JPG, JPEG o PNG de hasta 5 MB; límite de 10 MB por solicitud en los formularios de administración.</td></tr>
+    <tr><td>Encabezados HTTP</td><td><code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, <code>Referrer-Policy</code> y <code>Permissions-Policy</code> en todas las respuestas; HTTPS y HSTS fuera de desarrollo.</td></tr>
+    <tr><td>Secretos</td><td>Cadenas de conexión y contraseñas iniciales configurables por User Secrets o variables de entorno.</td></tr>
+</table>
+
+<h1>8. Manejo de errores y excepciones</h1>
+<ul>
+    <li><strong>Errores de negocio</strong> (datos inválidos, duplicados, permisos): los servicios devuelven un <code>Resultado</code> con un mensaje claro que se muestra al usuario; no se usan excepciones para el flujo normal.</li>
+    <li><strong>Conflictos de base de datos</strong> (dos operaciones simultáneas sobre un índice único o una clave foránea): <code>GuardarSinConflictoAsync</code> captura <code>DbUpdateException</code> y devuelve un mensaje amigable en vez de un error 500.</li>
+    <li><strong>Validación de formularios</strong>: DataAnnotations en servidor y validación en el navegador con jQuery Validation.</li>
+    <li><strong>Páginas de estado</strong>: <code>UseStatusCodePagesWithReExecute</code> muestra páginas propias para 404, 403 y 400.</li>
+    <li><strong>Excepciones no controladas</strong>: en producción, <code>UseExceptionHandler</code> muestra una página de error con el código de solicitud para rastrearlo en los registros; en desarrollo se muestra la página detallada de ASP.NET Core.</li>
+</ul>
+
+<h1>9. Rendimiento y escalabilidad</h1>
+<h2>9.1 Rendimiento</h2>
+<ul>
+    <li>Consultas proyectadas e índices descritos en la sección 6.3.</li>
+    <li>Imágenes con caché HTTP y carga diferida (<code>loading="lazy"</code>).</li>
+    <li>Archivos estáticos con caché de 7 días; <code>asp-append-version</code> invalida la caché al cambiar un archivo.</li>
+    <li>Vistas Razor compiladas en la publicación.</li>
+</ul>
+<h2>9.2 Escalabilidad</h2>
+<ul>
+    <li><strong>Aplicación sin estado en el servidor.</strong> La autenticación y los mensajes temporales viajan en cookies cifradas, por lo que se pueden ejecutar varias instancias detrás de un balanceador de carga.</li>
+    <li><strong>Al escalar horizontalmente</strong> se deben compartir las llaves de Data Protection entre instancias (por ejemplo con <code>PersistKeysToFileSystem</code> en un recurso compartido o un almacenamiento en la nube) para que las cookies sean válidas en todas.</li>
+    <li><strong>Base de datos.</strong> SQL Server permite escalar verticalmente o agregar réplicas de lectura; el DbContext por solicitud admite cambiar a <code>AddDbContextPool</code> para reducir el costo de creación de contextos con alto tráfico.</li>
+    <li><strong>Imágenes.</strong> Si el catálogo crece mucho, las imágenes pueden trasladarse a un almacenamiento de objetos con CDN sin cambiar las vistas, porque todas se sirven a través de la acción <code>Imagen</code>.</li>
+</ul>
+
+<h1>10. Configuración del entorno de desarrollo</h1>
+<h2>10.1 Requisitos</h2>
+<table>
+    <tr><th>Herramienta</th><th>Uso</th></tr>
+    <tr><td>.NET SDK 10</td><td>Compilar, ejecutar y probar.</td></tr>
+    <tr><td>SQL Server 2019+ (Developer, Express o LocalDB)</td><td>Base de datos.</td></tr>
+    <tr><td>Herramienta <code>dotnet-ef</code></td><td>Migraciones: <code>dotnet tool install --global dotnet-ef</code></td></tr>
+    <tr><td>Visual Studio 2026, Visual Studio Code o Rider</td><td>Edición y depuración.</td></tr>
+    <tr><td>Git</td><td>Control de versiones.</td></tr>
+</table>
+<h2>10.2 Pasos</h2>
+<ol class="pasos">
+    <li>Clonar el repositorio: <code>git clone https://github.com/MoisesM02/TripSV.git</code></li>
+    <li>Revisar la cadena <code>ConexionTripSV</code> en <code>TripSV/appsettings.json</code> o definirla con User Secrets (sección 6.2).</li>
+    <li>Crear la base de datos: <code>dotnet ef database update --project TripSV</code></li>
+    <li>Cargar el catálogo inicial con el script de la sección 6.4.</li>
+    <li>Ejecutar la aplicación: <code>dotnet run --project TripSV</code> y abrir <code>http://localhost:5255</code>.</li>
+    <li>Ejecutar las pruebas: <code>dotnet test</code></li>
+</ol>
+<h2>10.3 Usuarios iniciales</h2>
+<table>
+    <tr><th>Usuario</th><th>Contraseña</th><th>Rol</th></tr>
+    <tr><td>administrador</td><td>Administrador123$</td><td>Administrador</td></tr>
+    <tr><td>visitante</td><td>Visitante123$</td><td>Usuario</td></tr>
+</table>
+<div class="aviso">Son credenciales de demostración definidas en <code>appsettings.json</code> (sección <code>UsuariosIniciales</code>). Cámbielas antes de cualquier despliegue real.</div>
+
+<h1>11. Guía de despliegue</h1>
+<h2>11.1 Ejecutable incluido</h2>
+<p>
+    La carpeta <code>Ejecutable/</code> contiene <code>TripSV.zip</code>, la aplicación publicada en modo Release para
+    <strong>Windows x64</strong>, dependiente del runtime. Requiere tener instalado el <strong>ASP.NET Core Runtime 10</strong>
+    y acceso a SQL Server. Se descomprime, se ajusta <code>appsettings.json</code> o las variables de entorno y se ejecuta
+    <code>TripSV.exe</code>.
+</p>
+<h2>11.2 Generar una publicación</h2>
+<pre><code>dotnet publish TripSV/TripSV.csproj -c Release -r win-x64 --self-contained false -p:SatelliteResourceLanguages=es -o publicacion</code></pre>
+<p>
+    Para Linux se usa <code>-r linux-x64</code>. Con <code>--self-contained true</code> la publicación incluye el runtime y
+    no es necesario instalarlo en el servidor, a cambio de un paquete más grande.
+</p>
+<h2>11.3 Configurar y ejecutar</h2>
+<ol class="pasos">
+    <li>Definir las variables de entorno:
+<pre><code>ASPNETCORE_ENVIRONMENT=Production
+ConnectionStrings__ConexionTripSV=Server=servidor;Database=TripSV;User Id=...;Password=...;Encrypt=True
+UsuariosIniciales__Administrador__Password=UnaClaveSegura123</code></pre></li>
+    <li>Ejecutar con Kestrel: <code>dotnet TripSV.dll --urls "http://0.0.0.0:5000"</code>, idealmente detrás de un proxy inverso con HTTPS.</li>
+    <li>En IIS: instalar el <em>ASP.NET Core Hosting Bundle</em>, crear un sitio que apunte a la carpeta publicada y configurar el grupo de aplicaciones con "Sin código administrado".</li>
+    <li>La primera ejecución aplica las migraciones y crea los usuarios iniciales. Después, cargar el catálogo inicial si se desea.</li>
+</ol>
+<h2>11.4 Lista de verificación para producción</h2>
+<ul>
+    <li>Cambiar las contraseñas de los usuarios iniciales.</li>
+    <li>Usar una cadena de conexión con cifrado y un usuario de base de datos con permisos mínimos.</li>
+    <li>Publicar solo sobre HTTPS con un certificado válido.</li>
+    <li>Configurar el almacenamiento compartido de llaves si hay más de una instancia.</li>
+    <li>Programar respaldos de la base de datos.</li>
+</ul>
+
+<h1>12. Pruebas automatizadas</h1>
+<p>
+    El proyecto <code>TripSV.Pruebas</code> contiene 80 casos de prueba con xUnit que cubren los componentes críticos:
+    calificaciones, comentarios y moderación, favoritos, itinerarios, categorías y destinos, validación de imágenes,
+    saneamiento de HTML y reglas de seguridad de los controladores. Los servicios se prueban contra una base SQLite en
+    memoria, que es relacional y respeta índices únicos, claves foráneas y restricciones.
+</p>
+<pre><code>dotnet test</code></pre>
+<p>El detalle de cada prueba y sus resultados está en el <strong>Documento de Pruebas</strong>.</p>
+
+<h1>13. Flujo de trabajo con Git y GitHub</h1>
+<p>
+    El repositorio <code>MoisesM02/TripSV</code> mantiene una rama por integrante, identificada por su carné. Los
+    módulos de cada integrante se integran a <code>main</code> mediante Pull Requests con <em>merge commit</em>, lo que
+    conserva en el historial qué integrante entregó cada módulo. Las ramas se crean a partir del <code>main</code> actualizado, de
+    modo que la integración no produce conflictos.
+</p>
+<table>
+    <tr><th>Rama</th><th>Integrante</th><th>Aportes</th></tr>
+    <tr><td><code>rc220772</code></td><td>Alberto Ramos Cruz</td><td>Modelo de datos, contexto y migraciones de EF Core, script de datos iniciales; buscador de destinos con filtros.</td></tr>
+    <tr><td><code>hc220857</code></td><td>Rene Eduardo Hernandez Castro</td><td>Autenticación con Identity, roles y módulo de cuentas; sistema de favoritos.</td></tr>
+    <tr><td><code>ma220150</code></td><td>Moises Alonso Marroquin Ayala</td><td>Capa de servicios, catálogo público y configuración de la aplicación; planificador de viajes.</td></tr>
+    <tr><td><code>rg210380</code></td><td>Rafael Adolfo Ruiz García</td><td>Panel de administración y moderación; rediseño de la interfaz, pruebas automatizadas y documentación.</td></tr>
+</table>
+
+<h1>14. Cómo extender el sistema</h1>
+<p>Pasos para agregar un módulo nuevo siguiendo las convenciones del proyecto:</p>
+<ol class="pasos">
+    <li>Crear la entidad en <code>Modelos/</code> con sus DataAnnotations de validación.</li>
+    <li>Crear su configuración en <code>Datos/Configuraciones/</code> (tabla, columnas en español, índices y relaciones).</li>
+    <li>Agregar el <code>DbSet</code> en <code>ContextoTripSV</code> y generar la migración.</li>
+    <li>Crear la interfaz y el servicio en <code>Servicios/</code>, devolviendo <code>Resultado</code> y guardando con <code>GuardarSinConflictoAsync</code>.</li>
+    <li>Registrar el servicio en <code>Program.cs</code>.</li>
+    <li>Crear el controlador con la autorización adecuada y <code>[ValidateAntiForgeryToken]</code> en las acciones POST.</li>
+    <li>Crear las vistas reutilizando las parciales y clases de estilo existentes.</li>
+    <li>Agregar pruebas en <code>TripSV.Pruebas</code> para las reglas del servicio.</li>
+</ol>
+
+<h2>14.1 Herramientas incluidas</h2>
+<table>
+    <tr><th>Archivo</th><th>Uso</th></tr>
+    <tr><td><code>Herramientas/GenerarDocumentacion.cs</code></td><td>Con la aplicación en ejecución, toma las capturas de pantalla y genera los PDF de <code>Documentacion/</code>: <code>dotnet run Herramientas/GenerarDocumentacion.cs -- todo .</code></td></tr>
+    <tr><td><code>Herramientas/ConvertirDumpMySql.cs</code></td><td>Regenera el script de datos iniciales a partir del respaldo de la base de datos anterior.</td></tr>
+</table>
+
+</body>
+</html>

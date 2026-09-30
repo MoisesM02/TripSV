@@ -1,0 +1,13 @@
+@model Categoria
+
+<a class="tarjeta-categoria" asp-area="" asp-controller="Sitios" asp-action="MostrarSitios" asp-route-id="@Model.Id">
+    <img src="@Url.Action("Imagen", "Categorias", new { area = "", id = Model.Id })" alt="@Model.Nombre" loading="lazy" />
+    <div class="contenido">
+        <h3 class="primera-mayuscula">@Model.Nombre</h3>
+        @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+        {
+            <p class="line-clamp-2">@Model.Descripcion</p>
+        }
+        <span class="conteo"><i class="bi bi-pin-map"></i> @Model.Sitios.Count destino(s)</span>
+    </div>
+</a>
