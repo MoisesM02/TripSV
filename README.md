@@ -20,7 +20,8 @@ Entity Framework Core Code-First, SQL Server y ASP.NET Core Identity.
 
 **Gestión del proyecto:** https://trello.com/b/mb5UHC9n
 
-**Mock ups / Diseños:** Incluidos en el documento
+
+**Mock ups / Diseños:** https://www.figma.com/design/pGPTw81xapu0aHV8x30Bt5/TripsSV?node-id=0-1&t=nasSjqLEQos89QVl-1
 
 **Licencia:** Este proyecto está bajo licencia [Creative Commons BY-NC-SA 4.0 / la que corresponda] — [enlace a la licencia]
 
