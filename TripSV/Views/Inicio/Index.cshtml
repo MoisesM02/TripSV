@@ -1,4 +1,5 @@
 @model List<Categoria>
+@inject SignInManager<Usuario> gestorSesion
 @{
     var destacados = ViewBag.Destacados as List<Sitio> ?? new List<Sitio>();
     var portadas = new[]
@@ -9,46 +10,54 @@
         new { Imagen = "cerroVerde.jpg", Titulo = "Cerro Verde" },
         new { Imagen = "zonte.jpg", Titulo = "Playa El Zonte" }
     };
+    var testimonios = new[]
+    {
+        new { Texto = "Excelente trabajo.", Autor = "Carlos Miranda" },
+        new { Texto = "Me encanta la información de los sitios.", Autor = "María Abrego" },
+        new { Texto = "Este sitio me ayudó a encontrar los mejores lugares de El Salvador.", Autor = "Julián Herrera" }
+    };
 }
 
-<div id="carruselPrincipal" class="carousel slide carousel-fade" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        @for (var i = 0; i < portadas.Length; i++)
-        {
-            <button type="button" data-bs-target="#carruselPrincipal" data-bs-slide-to="@i"
-                    class="@(i == 0 ? "active" : "")" aria-label="Portada @(i + 1)"></button>
-        }
-    </div>
-    <div class="carousel-inner">
-        @for (var i = 0; i < portadas.Length; i++)
-        {
-            <div class="carousel-item @(i == 0 ? "active" : "")">
-                <img class="d-block w-100 slider-slide" src="~/img/@portadas[i].Imagen" alt="@portadas[i].Titulo" />
-                <div class="mask rgba-black-light"></div>
-                <div class="carousel-caption">
-                    <h3 class="h3-responsive" style="color:#FFF">@portadas[i].Titulo</h3>
+<section class="hero">
+    <div id="carruselPrincipal" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="6000">
+        <div class="carousel-inner">
+            @for (var i = 0; i < portadas.Length; i++)
+            {
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img class="d-block w-100 slider-slide" src="~/img/@portadas[i].Imagen" alt="@portadas[i].Titulo" />
+                    <div class="hero-capa"></div>
+                    <div class="carousel-caption">
+                        <span class="lugar-portada"><i class="bi bi-geo-alt-fill"></i> @portadas[i].Titulo</span>
+                    </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
-    </button>
-</div>
+    <div class="hero-contenido">
+        <h1>Descubra El Salvador</h1>
+        <p>Playas de clase mundial, volcanes, lagos y pueblos llenos de historia para su próxima aventura.</p>
+    </div>
+</section>
 
 <div class="container">
-    <div class="card shadow buscador-inicio">
+    <div class="card buscador-inicio">
         <div class="card-body p-4">
-            <h2 class="h4 mb-3">¿A dónde quiere ir?</h2>
+            <h2 class="h5 mb-3">¿A dónde quiere ir?</h2>
             <form asp-controller="Sitios" asp-action="Index" method="get" class="row g-2">
                 <div class="col-md-9">
-                    <input type="search" name="texto" class="form-control form-control-lg" maxlength="100"
-                           placeholder="Playas, lagos, volcanes, pueblos..." aria-label="Buscar destinos" />
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="search" name="texto" class="form-control" maxlength="100"
+                               placeholder="Playas, lagos, volcanes, pueblos..." aria-label="Buscar destinos" />
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-danger btn-lg w-100">Buscar</button>
@@ -58,91 +67,98 @@
     </div>
 </div>
 
-<div class="container py-5">
-    <h2 class="text-center mb-4">Categorías turísticas</h2>
-
-    @if (Model.Count == 0)
-    {
-        <div class="alert alert-info text-center">Todavía no hay categorías publicadas.</div>
-    }
-    else
-    {
-        <div class="row">
-            @foreach (var categoria in Model)
-            {
-                <div class="col-md-4 cats-slides mb-4">
-                    <div class="card mb-2 h-100">
-                        <img class="card-img-top cats-slide" src="@Url.Action("Imagen", "Categorias", new { id = categoria.Id })"
-                             alt="@categoria.Nombre" height="200" />
-                        <div class="card-body d-flex flex-column">
-                            <h4 class="card-title text-center primera-mayuscula">@categoria.Nombre</h4>
-                            <p class="card-text line-clamp text-justify">@categoria.Descripcion</p>
-                            <div class="mt-auto">
-                                <span class="badge bg-secondary mb-2">@categoria.Sitios.Count sitio(s)</span>
-                                <a class="btn btn-primary w-100 text-white"
-                                   asp-controller="Sitios" asp-action="MostrarSitios" asp-route-id="@categoria.Id">Ver más</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
+<section class="seccion">
+    <div class="container">
+        <div class="encabezado-seccion d-flex flex-wrap justify-content-between align-items-end gap-2">
+            <div>
+                <span class="antetitulo">Explore por categoría</span>
+                <h2>¿Qué tipo de viaje busca?</h2>
+            </div>
+            <a class="enlace-destino" asp-controller="Categorias" asp-action="Index">Ver todas <i class="bi bi-arrow-right"></i></a>
         </div>
-    }
-</div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="alert alert-info">Todavía no hay categorías publicadas.</div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var categoria in Model)
+                {
+                    <div class="col-sm-6 col-lg-4">
+                        <partial name="_TarjetaCategoria" model="categoria" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
 
 @if (destacados.Count > 0)
 {
-    <div class="container py-4">
-        <h2 class="text-center mb-4">Sitios mejor calificados</h2>
-        <div class="row">
-            @foreach (var sitio in destacados)
+    <section class="seccion">
+        <div class="container">
+            <div class="encabezado-seccion d-flex flex-wrap justify-content-between align-items-end gap-2">
+                <div>
+                    <span class="antetitulo">Recomendados por la comunidad</span>
+                    <h2>Los destinos mejor calificados</h2>
+                </div>
+                <a class="enlace-destino" asp-controller="Sitios" asp-action="Index">Ver catálogo <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="row g-4">
+                @foreach (var sitio in destacados)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <partial name="_TarjetaSitio" model="sitio" />
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="seccion">
+    <div class="container">
+        <div class="card banda-cta">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                <div>
+                    <h2 class="h3">Planifique su viaje día por día</h2>
+                    <p class="mb-0">Guarde sus destinos favoritos y organícelos en un itinerario que puede imprimir.</p>
+                </div>
+                @if (gestorSesion.IsSignedIn(User))
+                {
+                    <a class="btn btn-light btn-lg text-nowrap" asp-controller="Itinerarios" asp-action="Crear">Crear itinerario</a>
+                }
+                else
+                {
+                    <a class="btn btn-light btn-lg text-nowrap" asp-controller="Cuenta" asp-action="Registrar">Crear cuenta gratis</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="container">
+        <div class="encabezado-seccion text-center">
+            <span class="antetitulo">Testimonios</span>
+            <h2>Lo que dicen nuestros viajeros</h2>
+        </div>
+        <div class="row g-4">
+            @foreach (var testimonio in testimonios)
             {
-                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                    <div class="card h-100">
-                        <img class="card-img-top" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })"
-                             alt="@sitio.Nombre" height="200" />
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@sitio.Nombre</h5>
-                            <h6 class="text-muted">@sitio.Ubicacion</h6>
-                            <partial name="_Estrellas" model="sitio.Calificacion" />
-                            <div class="line-clamp mt-2">@sitio.Descripcion</div>
-                            <div class="mt-auto pt-3">
-                                <a class="btn btn-danger text-white" asp-controller="Sitios" asp-action="Detalle" asp-route-id="@sitio.Id">Ver más</a>
-                            </div>
+                <div class="col-md-4">
+                    <div class="card testimonio d-flex flex-column">
+                        <div class="comillas"><i class="bi bi-quote"></i></div>
+                        <blockquote class="mb-4">@testimonio.Texto</blockquote>
+                        <div class="d-flex align-items-center gap-2 mt-auto">
+                            <span class="avatar">@testimonio.Autor[..1]</span>
+                            <strong>@testimonio.Autor</strong>
                         </div>
                     </div>
                 </div>
             }
         </div>
     </div>
-}
-
-<div class="container py-4">
-    <div id="carruselTestimonios" class="carousel slide text-dark" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <div class="carousel-item active text-center p-4">
-                <blockquote class="blockquote text-center">
-                    <p class="mb-0">&ldquo; Excelente trabajo. &rdquo;</p>
-                    <footer class="blockquote-footer">Carlos Miranda</footer>
-                </blockquote>
-            </div>
-            <div class="carousel-item text-center p-4">
-                <blockquote class="blockquote text-center">
-                    <p class="mb-0">&ldquo; Me encanta la información de los sitios. &rdquo;</p>
-                    <footer class="blockquote-footer">María Abrego</footer>
-                </blockquote>
-            </div>
-            <div class="carousel-item text-center p-4">
-                <blockquote class="blockquote text-center">
-                    <p class="mb-0">&ldquo; Este sitio me ayudó a encontrar los mejores lugares de El Salvador. &rdquo;</p>
-                    <footer class="blockquote-footer">Julián Herrera</footer>
-                </blockquote>
-            </div>
-        </div>
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carruselTestimonios" data-bs-slide-to="0" class="active" aria-label="Testimonio 1"></button>
-            <button type="button" data-bs-target="#carruselTestimonios" data-bs-slide-to="1" aria-label="Testimonio 2"></button>
-            <button type="button" data-bs-target="#carruselTestimonios" data-bs-slide-to="2" aria-label="Testimonio 3"></button>
-        </div>
-    </div>
-</div>
+</section>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Documento de Pruebas - Trips SV</title>
+    <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+
+<section class="portada">
+    <div>
+        <div class="institucion">Universidad Don Bosco · Desarrollo de Software Empresarial · Grupo teórico G01T</div>
+    </div>
+    <div>
+        <div class="marca"><span>&#9679;</span>Trips SV</div>
+        <div class="banda"></div>
+        <p class="titulo">Documento de Pruebas</p>
+        <p class="subtitulo">Pruebas automatizadas y de integración, casos cubiertos y resultados obtenidos</p>
+        <table>
+            <tr><th>Integrante</th><th>Carné</th></tr>
+            <tr><td>Alberto Ramos Cruz</td><td>RC220772</td></tr>
+            <tr><td>Moises Alonso Marroquin Ayala</td><td>MA220150</td></tr>
+            <tr><td>Rene Eduardo Hernandez Castro</td><td>HC220857</td></tr>
+            <tr><td>Rafael Adolfo Ruiz García</td><td>RG210380</td></tr>
+        </table>
+    </div>
+    <div class="institucion">San Salvador, 30 de septiembre de 2026</div>
+</section>
+
+<h1>1. Resumen</h1>
+<div class="resumen">
+    <div><strong>80</strong>casos automatizados</div>
+    <div class="aprobadas"><strong>80</strong>aprobados</div>
+    <div><strong>0</strong>fallidos</div>
+    <div><strong>12</strong>pruebas de integración</div>
+</div>
+<p>
+    Todas las pruebas automatizadas se ejecutaron con resultado satisfactorio el 28 de septiembre de 2026, en
+    aproximadamente un segundo. Las pruebas de integración se ejecutaron contra la aplicación en funcionamiento con
+    SQL Server y también resultaron satisfactorias.
+</p>
+
+<h2>1.1 Objetivo y alcance</h2>
+<p>
+    Verificar que los componentes críticos de Trips SV cumplen sus reglas de negocio y de seguridad: calificaciones,
+    reseñas y moderación, favoritos, planificador de viajes, gestión de categorías y destinos, validación de archivos,
+    protección contra XSS y control de acceso por rol.
+</p>
+
+<h2>1.2 Estrategia</h2>
+<table>
+    <tr><th>Nivel</th><th>Herramienta</th><th>Qué verifica</th></tr>
+    <tr><td>Unitarias de servicios</td><td>xUnit + EF Core con SQLite en memoria</td><td>Reglas de negocio contra una base relacional real que respeta índices únicos, claves foráneas, borrados en cascada y restricciones CHECK. Cada prueba usa una base nueva y aislada.</td></tr>
+    <tr><td>Unitarias de componentes</td><td>xUnit</td><td>Validación de imágenes y saneamiento de HTML.</td></tr>
+    <tr><td>Seguridad estructural</td><td>xUnit + reflexión</td><td>Que cada controlador tenga la autorización correcta y que ninguna acción POST quede sin protección antifalsificación, incluso si en el futuro se agregan controladores nuevos.</td></tr>
+    <tr><td>Integración</td><td>Aplicación en ejecución + SQL Server + cliente HTTP y navegador</td><td>Flujos completos de extremo a extremo por rol, redirecciones, encabezados, páginas de error y diseño.</td></tr>
+</table>
+
+<h2>1.3 Entorno</h2>
+<table>
+    <tr><th>Elemento</th><th>Valor</th></tr>
+    <tr><td>Sistema operativo</td><td>Windows 11 Pro</td></tr>
+    <tr><td>SDK</td><td>.NET 10.0.400</td></tr>
+    <tr><td>Framework de pruebas</td><td>xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1</td></tr>
+    <tr><td>Base de datos de pruebas unitarias</td><td>SQLite en memoria (Microsoft.EntityFrameworkCore.Sqlite 10.0.12)</td></tr>
+    <tr><td>Base de datos de integración</td><td>Microsoft SQL Server 2025 Developer</td></tr>
+</table>
+
+<h2>1.4 Cómo ejecutar las pruebas</h2>
+<pre><code>dotnet test</code></pre>
+<p>Para obtener además un reporte detallado en formato TRX:</p>
+<pre><code>dotnet test --logger "trx;LogFileName=resultados.trx"</code></pre>
+
+<h1>2. Pruebas automatizadas</h1>
+<p>La columna <strong>Casos</strong> indica cuántas combinaciones de datos ejecuta cada prueba parametrizada.</p>
+
+<h2>2.1 Calificaciones — <code>PuntuacionesServicioPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>P-01</td><td>Calificar_PrimeraVez_CreaPuntuacionYActualizaPromedio</td><td>Un usuario califica con 4 un sitio sin calificaciones: se guarda y el sitio queda con promedio 4,0 y 1 calificación.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>P-02</td><td>Calificar_SegundaVezMismoUsuario_ActualizaSinDuplicar</td><td>El mismo usuario califica 2 y luego 5: existe una sola calificación con valor 5 y el mensaje indica que se actualizó.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>P-03</td><td>Calificar_VariosUsuarios_CalculaPromedioRedondeadoAUnDecimal</td><td>Tres usuarios califican 5, 4 y 4: el promedio es 4,3 y el total 3.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>P-04</td><td>Calificar_ValorFueraDeRango_Rechaza</td><td>Valores 0, 6 y −1 se rechazan y no se guarda nada.</td><td>3</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>P-05</td><td>Calificar_SinUsuario_Rechaza</td><td>Sin nombre de usuario la calificación se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>P-06</td><td>Calificar_SitioInexistente_Rechaza</td><td>Calificar un sitio que no existe devuelve "El sitio no existe."</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.2 Reseñas y moderación — <code>ComentariosServicioPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>C-01</td><td>Agregar_ComentarioValido_SeGuardaConAutorYFecha</td><td>Una reseña válida se guarda visible, sin padre, con autor y fecha.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-02</td><td>Agregar_TextoVacio_Rechaza</td><td>Texto vacío o solo espacios se rechaza.</td><td>2</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-03</td><td>Agregar_RespuestaAUnaRespuesta_SeAgrupaBajoElComentarioOriginal</td><td>Responder a una respuesta la agrupa bajo el comentario original (hilos de un nivel).</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-04</td><td>Agregar_RespuestaAComentarioDeOtroSitio_Rechaza</td><td>No se puede responder en un sitio a un comentario de otro sitio.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-05</td><td>Eliminar_ComentarioAjenoSiendoUsuario_Rechaza</td><td>Un usuario no puede eliminar la reseña de otro; la reseña permanece.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-06</td><td>Eliminar_ComentarioPropio_EliminaTambienSusRespuestas</td><td>El autor elimina su reseña (sin importar mayúsculas en el nombre) y se eliminan sus respuestas.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-07</td><td>Eliminar_ComentarioAjenoSiendoAdministrador_Permite</td><td>Un administrador puede eliminar la reseña de cualquier usuario.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-08</td><td>CambiarVisibilidad_Ocultar_OcultaElComentarioYSusRespuestas</td><td>Ocultar una reseña oculta también sus respuestas.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>C-09</td><td>ListarPorSitio_VisitanteNoVeOcultosYAdministradorSi</td><td>Con una reseña oculta, el visitante ve 1 y el administrador ve 2.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.3 Favoritos — <code>FavoritosServicioPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>F-01</td><td>Alternar_SitioNoGuardado_LoAgregaAFavoritos</td><td>Alternar un sitio no guardado lo agrega.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>F-02</td><td>Alternar_SitioYaGuardado_LoQuitaDeFavoritos</td><td>Alternar un sitio guardado lo quita y no quedan registros.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>F-03</td><td>Alternar_SitioInexistente_Rechaza</td><td>Un sitio inexistente se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>F-04</td><td>Alternar_SinUsuario_Rechaza</td><td>Sin usuario autenticado se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>F-05</td><td>ContarPorSitio_CuentaCadaUsuarioUnaSolaVez</td><td>Dos usuarios guardan el mismo sitio: el contador es 2.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>F-06</td><td>Listar_DevuelveSoloLosFavoritosDelUsuario</td><td>Cada usuario ve solo sus propios favoritos.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.4 Planificador de viajes — <code>ItinerariosServicioPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>I-01</td><td>Crear_DatosValidos_GuardaElItinerario</td><td>Un viaje de 3 días desde el 05/10/2026 se guarda y termina el 07/10/2026.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-02</td><td>Crear_CantidadDeDiasFueraDeRango_Rechaza</td><td>0 y 16 días se rechazan (rango permitido: 1 a 15).</td><td>2</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-03</td><td>AgregarVisita_AsignaOrdenConsecutivoDentroDelDia</td><td>Dos visitas en el mismo día quedan con orden 1 y 2.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-04</td><td>AgregarVisita_MismoSitioEnElMismoDia_Rechaza</td><td>El mismo destino dos veces en un día se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-05</td><td>AgregarVisita_DiaFueraDelViaje_Rechaza</td><td>En un viaje de 3 días, los días 0 y 4 se rechazan.</td><td>2</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-06</td><td>AgregarVisita_DiaCompleto_Rechaza</td><td>Con 10 destinos en un día, el undécimo se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-07</td><td>AgregarVisita_ItinerarioDeOtroUsuario_Rechaza</td><td>Otro usuario no puede agregar destinos a un itinerario ajeno.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-08</td><td>MoverVisita_HaciaArriba_IntercambiaElOrden</td><td>Subir la segunda visita la deja primera y reordena la otra.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-09</td><td>MoverVisita_PrimeraHaciaArriba_Rechaza</td><td>La primera visita no puede subir más.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-10</td><td>CambiarDia_MueveLaVisitaYRenumeraAmbosDias</td><td>Mover una visita del día 1 al 2 la coloca al final del día 2 y renumera el día 1.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-11</td><td>QuitarVisita_RenumeraLasRestantes</td><td>Quitar la primera visita deja las restantes con orden 1 y 2.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-12</td><td>Actualizar_ReducirDiasDejandoVisitasFuera_Rechaza</td><td>Reducir de 3 a 2 días con una visita en el día 3 se rechaza con un mensaje que indica el día.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-13</td><td>Eliminar_ItinerarioDeOtroUsuario_Rechaza</td><td>Otro usuario no puede eliminar un itinerario ajeno.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-14</td><td>Obtener_ItinerarioDeOtroUsuario_DevuelveNulo</td><td>Un itinerario ajeno no se puede consultar ni aparece en la lista del otro usuario.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>I-15</td><td>Eliminar_ItinerarioPropio_EliminaTambienSusVisitas</td><td>Eliminar un itinerario propio elimina sus visitas.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.5 Categorías y destinos — <code>CategoriasYSitiosServicioPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>S-01</td><td>CrearCategoria_NombreDuplicado_Rechaza</td><td>Una categoría con el mismo nombre (aun con espacios alrededor) se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-02</td><td>EliminarCategoria_ConSitiosAsociados_Rechaza</td><td>No se elimina una categoría que tiene destinos.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-03</td><td>EliminarCategoria_SinSitios_LaElimina</td><td>Una categoría sin destinos se elimina.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-04</td><td>ListarCategorias_IncluyeElConteoDeSitiosSinCargarImagenes</td><td>El listado trae el número de destinos de cada categoría sin cargar imágenes.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-05</td><td>CrearSitio_SinImagen_Rechaza</td><td>Un destino sin imagen se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-06</td><td>CrearSitio_CategoriaInexistente_Rechaza</td><td>Un destino con una categoría inexistente se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-07</td><td>CrearSitio_InformacionConScript_SeGuardaSaneada</td><td>El contenido con una etiqueta <code>&lt;script&gt;</code> se guarda sin ella, conservando el texto.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-08</td><td>CrearSitio_NombreDuplicado_Rechaza</td><td>Un destino con un nombre existente se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-09</td><td>EliminarSitios_SinSeleccion_Rechaza</td><td>Eliminar sin seleccionar destinos se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-10</td><td>EliminarSitios_EliminaEnCascadaComentariosYFavoritos</td><td>Eliminar un destino elimina sus reseñas y favoritos.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>S-11</td><td>ListarUbicaciones_UnificaVariantesDeMayusculas</td><td>"La Libertad" y "La libertad" aparecen como un solo departamento en el filtro.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.6 Validación de imágenes y saneamiento de HTML — <code>ValidacionYSanitizacionPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>V-01</td><td>ValidarImagen_SinArchivo_Rechaza</td><td>Sin archivo se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>V-02</td><td>ValidarImagen_FormatoPermitido_Acepta</td><td>PNG, JPEG y JPG se aceptan.</td><td>3</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>V-03</td><td>ValidarImagen_FormatoNoPermitido_Rechaza</td><td>GIF, texto plano y ejecutables se rechazan.</td><td>3</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>V-04</td><td>ValidarImagen_MayorACincoMegas_Rechaza</td><td>Un archivo de 5 MB + 1 byte se rechaza.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-01</td><td>Sanitizar_EliminaEtiquetasScript</td><td><code>&lt;script&gt;</code> se elimina y el párrafo se conserva.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-02</td><td>Sanitizar_EliminaManejadoresDeEventos</td><td>El atributo <code>onerror</code> se elimina.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-03</td><td>Sanitizar_EliminaEnlacesJavascript</td><td>Los enlaces <code>javascript:</code> se neutralizan.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-04</td><td>Sanitizar_ConservaElFormatoDelEditor</td><td>Negritas, cursivas, listas y enlaces seguros se conservan.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-05</td><td>Sanitizar_ConservaMapasDeGoogle</td><td>Un <code>iframe</code> de Google Maps se conserva.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-06</td><td>Sanitizar_EliminaIframesDeOrigenesNoPermitidos</td><td>Un <code>iframe</code> de un dominio desconocido se elimina.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>H-07</td><td>Sanitizar_ContenidoVacio_LoDevuelveSinCambios</td><td>Contenido nulo o vacío se devuelve igual.</td><td>2</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h2>2.7 Control de acceso — <code>SeguridadPruebas</code></h2>
+<table>
+    <tr><th>ID</th><th>Prueba</th><th>Escenario y resultado esperado</th><th>Casos</th><th>Resultado</th></tr>
+    <tr><td>G-01</td><td>ExistenControladoresDeAdministracion</td><td>El área de administración tiene los 3 controladores esperados.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>G-02</td><td>ControladorDeAdministracion_ExigeRolAdministrador</td><td>Categorías, Sitios y Moderación exigen el rol Administrador.</td><td>3</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>G-03</td><td>ControladorDeUsuario_ExigeIniciarSesion</td><td>Favoritos, Itinerarios, Comentarios y Puntuaciones exigen sesión iniciada.</td><td>4</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>G-04</td><td>ControladorPublico_PermiteVisitantesAnonimos</td><td>Inicio, Categorías y Sitios son accesibles sin sesión.</td><td>3</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>G-05</td><td>TodasLasAccionesPost_ValidanElTokenAntifalsificacion</td><td>Ninguna acción POST de ningún controlador queda sin <code>[ValidateAntiForgeryToken]</code>.</td><td>1</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h1>3. Pruebas de integración</h1>
+<p>
+    Se ejecutaron contra la aplicación en funcionamiento sobre SQL Server, con los usuarios <em>administrador</em> y
+    <em>visitante</em> y sesiones anónimas, enviando solicitudes HTTP reales (incluidos los tokens antifalsificación)
+    y verificando tanto la respuesta como el estado final de la base de datos.
+</p>
+<table>
+    <tr><th>ID</th><th>Escenario</th><th>Resultado obtenido</th><th>Estado</th></tr>
+    <tr><td>E-01</td><td>Acceso al área de administración por rol.</td><td>Anónimo: redirección al inicio de sesión. Usuario: redirección a "Acceso denegado". Administrador: las 7 páginas del área responden 200.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-02</td><td>Flujo completo de favoritos.</td><td>Guardar, listar y quitar actualizan el botón, el contador y la lista; un sitio inexistente se rechaza.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-03</td><td>Redirección abierta en el parámetro de retorno.</td><td>Las rutas locales se respetan; <code>https://…</code> y <code>//…</code> externos redirigen al propio sitio.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-04</td><td>Flujo completo del planificador.</td><td>Crear, agregar, reordenar, mover de día, editar, quitar y eliminar dejan el orden correcto en la base de datos después de cada paso.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-05</td><td>Aislamiento de itinerarios entre usuarios.</td><td>El administrador intentó ver, agregar, quitar y eliminar en el itinerario del visitante: no pudo y las 4 visitas quedaron intactas.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-06</td><td>Búsqueda y filtros sobre SQL Server.</td><td>"ceren" encuentra "Joya de Cerén", "montanas" encuentra la categoría "Montañas", "lago santa ana" exige todas las palabras; filtros combinados y orden correctos.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-07</td><td>Entradas maliciosas en la búsqueda.</td><td>Texto con intento de inyección SQL y parámetros inválidos responden 200 sin afectar datos (la tabla de sitios conserva sus registros).</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-08</td><td>Moderación de extremo a extremo.</td><td>Al ocultar una reseña con respuesta, el visitante deja de verlas y el administrador las ve marcadas como ocultas.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-09</td><td>Validaciones del panel de administración.</td><td>Se rechazan nombre duplicado, destino sin imagen, archivo que no es imagen y eliminación de una categoría con destinos.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-10</td><td>Renderizado de todas las páginas por rol.</td><td>22 páginas revisadas con visitante anónimo, usuario y administrador: todas responden 200 con menú y pie de página.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-11</td><td>Pie de página, errores y encabezados.</td><td>En una página corta el pie termina exactamente en el borde inferior de la ventana; la ruta inexistente muestra la página 404; todas las respuestas incluyen los encabezados de seguridad.</td><td class="estado-aprobada">Aprobada</td></tr>
+    <tr><td>E-12</td><td>Saneamiento sobre el contenido existente.</td><td>Los 26 destinos con mapa embebido conservan su mapa de Google después del saneamiento.</td><td class="estado-aprobada">Aprobada</td></tr>
+</table>
+
+<h1>4. Cobertura de casos críticos</h1>
+<table>
+    <tr><th>Caso crítico</th><th>Pruebas que lo cubren</th></tr>
+    <tr><td>Solo el administrador gestiona categorías, destinos y moderación</td><td>G-01, G-02, E-01</td></tr>
+    <tr><td>Solo usuarios registrados califican, comentan, guardan favoritos y planifican</td><td>G-03, P-05, F-04</td></tr>
+    <tr><td>Visitantes anónimos consultan el catálogo completo</td><td>G-04, E-10</td></tr>
+    <tr><td>Una calificación por usuario y promedio correcto</td><td>P-01, P-02, P-03, P-04</td></tr>
+    <tr><td>Hilos de discusión</td><td>C-03, C-04</td></tr>
+    <tr><td>Un usuario no puede borrar contenido ajeno</td><td>C-05, C-06, C-07</td></tr>
+    <tr><td>Moderación: ocultar sin borrar</td><td>C-08, C-09, E-08</td></tr>
+    <tr><td>Privacidad de favoritos e itinerarios</td><td>F-06, I-07, I-13, I-14, E-05</td></tr>
+    <tr><td>Reglas del planificador</td><td>I-01 a I-12, I-15, E-04</td></tr>
+    <tr><td>Integridad de datos (duplicados, cascadas, restricciones)</td><td>S-01 a S-03, S-08, S-10, I-04, I-15</td></tr>
+    <tr><td>Protección contra XSS</td><td>S-07, H-01 a H-07, E-12</td></tr>
+    <tr><td>Protección contra CSRF</td><td>G-05</td></tr>
+    <tr><td>Protección contra inyección SQL</td><td>E-07</td></tr>
+    <tr><td>Carga segura de archivos</td><td>V-01 a V-04, S-05, E-09</td></tr>
+</table>
+
+<h1>5. Conclusiones</h1>
+<ul>
+    <li>Los 80 casos automatizados y las 12 pruebas de integración se completaron sin fallos.</li>
+    <li>Las reglas de negocio de los cuatro módulos de usuario y del panel de administración están cubiertas por pruebas que se ejecutan en segundos y sin dependencias externas, por lo que pueden correrse en cada cambio.</li>
+    <li>Las pruebas de seguridad estructural detectarán automáticamente si un controlador nuevo se agrega sin autorización o una acción POST sin protección antifalsificación.</li>
+    <li>La búsqueda con insensibilidad a tildes depende de una intercalación propia de SQL Server, por lo que se verificó con pruebas de integración (E-06) en lugar de pruebas unitarias sobre SQLite.</li>
+</ul>
+
+</body>
+</html>

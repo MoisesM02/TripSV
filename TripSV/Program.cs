@@ -44,6 +44,7 @@ constructor.Services.AddScoped<IComentariosServicio, ComentariosServicio>();
 constructor.Services.AddScoped<IPuntuacionesServicio, PuntuacionesServicio>();
 constructor.Services.AddScoped<IFavoritosServicio, FavoritosServicio>();
 constructor.Services.AddScoped<IItinerariosServicio, ItinerariosServicio>();
+constructor.Services.AddSingleton<ISanitizadorHtml, SanitizadorHtml>();
 constructor.Services.AddScoped<SembradorDatos>();
 
 constructor.Services.AddControllersWithViews();
@@ -60,8 +61,24 @@ else
     app.UseDeveloperExceptionPage();
 }
 
+app.UseStatusCodePagesWithReExecute("/Inicio/Estado/{0}");
+
+app.Use(async (contexto, siguiente) =>
+{
+    var encabezados = contexto.Response.Headers;
+    encabezados["X-Content-Type-Options"] = "nosniff";
+    encabezados["X-Frame-Options"] = "SAMEORIGIN";
+    encabezados["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    encabezados["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    await siguiente();
+});
+
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = archivo =>
+        archivo.Context.Response.Headers.CacheControl = "public,max-age=604800"
+});
 app.UseRouting();
 
 app.UseAuthentication();

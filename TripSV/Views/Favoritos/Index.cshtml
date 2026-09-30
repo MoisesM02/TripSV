@@ -1,44 +1,55 @@
 @model List<Favorito>
 
 <div class="container py-4">
-    <h1 class="mb-1">Mis favoritos</h1>
-    <p class="text-muted mb-4">Los destinos que guardó para visitar.</p>
+    <div class="encabezado-pagina">
+        <span class="antetitulo">Su lista</span>
+        <h1>Mis favoritos</h1>
+        <p>Los destinos que guardó para visitar.</p>
+    </div>
 
     @if (Model.Count == 0)
     {
-        <div class="alert alert-info">
-            Todavía no guardó ningún destino. Explore el
-            <a asp-controller="Sitios" asp-action="Index">catálogo de sitios</a>
-            y use el botón <strong>Guardar en mis favoritos</strong> en los que le interesen.
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="display-6 text-danger mb-2"><i class="bi bi-heart"></i></div>
+                <h2 class="h5">Todavía no guardó ningún destino</h2>
+                <p class="text-muted">Use el botón <strong>Guardar en mis favoritos</strong> en los destinos que le interesen.</p>
+                <a class="btn btn-danger" asp-controller="Sitios" asp-action="Index">Explorar destinos</a>
+            </div>
         </div>
     }
     else
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach (var favorito in Model)
             {
                 var sitio = favorito.Sitio!;
-                <div class="col-lg-4 col-md-6 col-sm-12 p-3">
-                    <div class="card h-100">
-                        <img class="card-img-top" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })"
-                             alt="@sitio.Nombre" height="220" />
-                        <div class="card-body d-flex flex-column">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card tarjeta-sitio h-100">
+                        <div class="tarjeta-imagen">
+                            <img src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })" alt="@sitio.Nombre" loading="lazy" />
+                            <span class="etiqueta-flotante etiqueta-categoria primera-mayuscula">@sitio.Categoria?.Nombre</span>
+                            <span class="etiqueta-flotante etiqueta-calificacion">
+                                <i class="bi bi-star-fill"></i> @sitio.Calificacion.ToString("0.0")
+                            </span>
+                        </div>
+                        <div class="card-body">
                             <h5 class="card-title">@sitio.Nombre</h5>
-                            <h6 class="text-muted">@sitio.Ubicacion</h6>
-                            <span class="badge bg-primary primera-mayuscula mb-2">@sitio.Categoria?.Nombre</span>
-                            <partial name="_Estrellas" model="sitio.Calificacion" />
-                            <div class="line-clamp mt-2">@sitio.Descripcion</div>
-                            <small class="text-muted mt-2">Guardado el @favorito.Fecha.ToString("dd/MM/yyyy")</small>
-                            <div class="mt-auto pt-3 d-flex gap-2">
-                                <a class="btn btn-danger text-white" asp-controller="Sitios" asp-action="Detalle" asp-route-id="@sitio.Id">Ver más</a>
-                                <form asp-action="Alternar" method="post"
-                                      onsubmit="return confirm('¿Quitar este destino de sus favoritos?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="sitioId" value="@sitio.Id" />
-                                    <input type="hidden" name="urlRetorno" value="@Url.Action("Index", "Favoritos")" />
-                                    <button type="submit" class="btn btn-outline-secondary">Quitar</button>
-                                </form>
-                            </div>
+                            <div class="ubicacion mb-2"><i class="bi bi-geo-alt"></i> @sitio.Ubicacion</div>
+                            <p class="line-clamp-2 text-secondary mb-2">@sitio.Descripcion</p>
+                            <small class="text-muted"><i class="bi bi-heart-fill text-danger"></i> Guardado el @favorito.Fecha.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <a class="enlace-destino" asp-controller="Sitios" asp-action="Detalle" asp-route-id="@sitio.Id">
+                                Ver destino <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <form asp-action="Alternar" method="post"
+                                  onsubmit="return confirm('¿Quitar este destino de sus favoritos?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                <input type="hidden" name="urlRetorno" value="@Url.Action("Index", "Favoritos")" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Quitar</button>
+                            </form>
                         </div>
                     </div>
                 </div>

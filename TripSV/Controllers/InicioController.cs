@@ -26,5 +26,12 @@ namespace TripSV.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() =>
             View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Estado(int id)
+        {
+            ViewData["Title"] = id == 404 ? "Página no encontrada" : "Ocurrió un problema";
+            return View(id);
+        }
     }
 }

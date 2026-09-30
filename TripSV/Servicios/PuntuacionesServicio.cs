@@ -54,7 +54,10 @@ namespace TripSV.Servicios
                 });
             }
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             var promedio = await RecalcularPromedioAsync(sitioId);
 

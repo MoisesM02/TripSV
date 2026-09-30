@@ -5,9 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>TripSV</RootNamespace>
+    <UserSecretsId>tripsv-7c5e2f0a-4b1d-4e8a-9f3c-2d6b8a1e5c90</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HtmlSanitizer" Version="9.*" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.*">

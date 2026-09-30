@@ -60,7 +60,11 @@ namespace TripSV.Servicios
             if (existente is not null)
             {
                 contexto.Favoritos.Remove(existente);
-                await contexto.SaveChangesAsync();
+                if (!await contexto.GuardarSinConflictoAsync())
+                {
+                    return Resultado.Conflicto();
+                }
+
                 return Resultado.Ok($"Se quitó {sitio.Nombre} de sus favoritos.");
             }
 
@@ -71,7 +75,11 @@ namespace TripSV.Servicios
                 Fecha = FechaHora.Ahora
             });
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
+
             return Resultado.Ok($"Se agregó {sitio.Nombre} a sus favoritos.");
         }
     }

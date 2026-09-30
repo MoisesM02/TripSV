@@ -114,7 +114,10 @@ namespace TripSV.Servicios
             };
 
             contexto.Comentarios.Add(comentario);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok(respuestaAId is null
                 ? "Comentario publicado correctamente."
@@ -142,11 +145,17 @@ namespace TripSV.Servicios
             if (comentario.Respuestas.Count > 0)
             {
                 contexto.Comentarios.RemoveRange(comentario.Respuestas);
-                await contexto.SaveChangesAsync();
+                if (!await contexto.GuardarSinConflictoAsync())
+                {
+                    return Resultado.Conflicto();
+                }
             }
 
             contexto.Comentarios.Remove(comentario);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok("Comentario eliminado correctamente.");
         }
@@ -169,7 +178,10 @@ namespace TripSV.Servicios
                 respuesta.Oculto = oculto;
             }
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok(oculto
                 ? "El comentario quedó oculto para los visitantes."

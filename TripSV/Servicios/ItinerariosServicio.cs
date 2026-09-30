@@ -84,7 +84,10 @@ namespace TripSV.Servicios
             itinerario.FechaCreacion = FechaHora.Ahora;
 
             contexto.Itinerarios.Add(itinerario);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se creó el itinerario «{itinerario.Nombre}».");
         }
@@ -115,7 +118,10 @@ namespace TripSV.Servicios
             actual.CantidadDias = itinerario.CantidadDias;
             actual.Notas = Limpiar(itinerario.Notas);
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se actualizó el itinerario «{actual.Nombre}».");
         }
@@ -129,7 +135,10 @@ namespace TripSV.Servicios
             }
 
             contexto.Itinerarios.Remove(itinerario);
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se eliminó el itinerario «{itinerario.Nombre}».");
         }
@@ -179,7 +188,10 @@ namespace TripSV.Servicios
                 Notas = notasLimpias
             });
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se agregó {nombreSitio} al día {dia} de «{itinerario.Nombre}».");
         }
@@ -200,7 +212,10 @@ namespace TripSV.Servicios
             contexto.Visitas.Remove(visita);
             Renumerar(restantes);
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             var nombreSitio = await ObtenerNombreSitioAsync(visita.SitioId);
             return Resultado.Ok($"Se quitó {nombreSitio} del día {visita.Dia}.");
@@ -236,7 +251,10 @@ namespace TripSV.Servicios
             (delDia[posicion], delDia[destino]) = (delDia[destino], delDia[posicion]);
             Renumerar(delDia);
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok();
         }
@@ -284,7 +302,10 @@ namespace TripSV.Servicios
                 .OrderBy(v => v.Orden)
                 .ToList());
 
-            await contexto.SaveChangesAsync();
+            if (!await contexto.GuardarSinConflictoAsync())
+            {
+                return Resultado.Conflicto();
+            }
 
             return Resultado.Ok($"Se movió {nombreSitio} al día {dia}.");
         }

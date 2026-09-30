@@ -14,12 +14,20 @@
         </ol>
     </nav>
 
-    <h1>@sitio.Nombre, @sitio.Ubicacion</h1>
-    <p class="lead">@sitio.Descripcion</p>
+    <div class="encabezado-pagina">
+        <h1 class="mb-3">@sitio.Nombre</h1>
+        <div class="chips mb-3">
+            <span class="chip"><i class="bi bi-geo-alt-fill"></i> @sitio.Ubicacion</span>
+            <span class="chip"><i class="bi bi-tag-fill"></i> <span class="primera-mayuscula">@sitio.Categoria?.Nombre</span></span>
+            <span class="chip"><i class="bi bi-star-fill"></i> @sitio.Calificacion.ToString("0.0") · @sitio.TotalPuntuaciones calificación(es)</span>
+            <span class="chip"><i class="bi bi-heart-fill text-danger"></i> @Model.TotalFavoritos en favoritos</span>
+        </div>
+        <p class="lead mb-0">@sitio.Descripcion</p>
+    </div>
 
     <div class="row">
         <div class="col-lg-8">
-            <img class="img-fluid rounded" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })" alt="@sitio.Nombre" />
+            <img class="imagen-principal mb-4 mb-lg-0" src="@Url.Action("Imagen", "Sitios", new { id = sitio.Id })" alt="@sitio.Nombre" />
         </div>
         <div class="col-lg-4">
             <div class="card mb-3">
@@ -36,13 +44,13 @@
                             @if (Model.EsFavorito)
                             {
                                 <button type="submit" class="btn btn-outline-danger w-100">
-                                    <span class="corazon activo">&#9829;</span> Quitar de mis favoritos
+                                    <i class="bi bi-heart-fill"></i> Quitar de mis favoritos
                                 </button>
                             }
                             else
                             {
                                 <button type="submit" class="btn btn-danger w-100">
-                                    <span class="corazon">&#9825;</span> Guardar en mis favoritos
+                                    <i class="bi bi-heart"></i> Guardar en mis favoritos
                                 </button>
                             }
                         </form>
@@ -149,10 +157,10 @@
         </div>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(sitio.Informacion))
+    @if (!string.IsNullOrWhiteSpace(Model.InformacionSegura))
     {
-        <div class="mt-4" id="informacion">
-            @Html.Raw(sitio.Informacion)
+        <div class="mt-4 contenido-enriquecido" id="informacion">
+            @Html.Raw(Model.InformacionSegura)
         </div>
     }
 
@@ -191,80 +199,88 @@
             @foreach (var comentario in Model.Comentarios)
             {
                 <div class="card mb-3 @(comentario.Oculto ? "border-warning" : "")">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div class="username fw-bold">@comentario.NombreUsuario</div>
-                            <div class="timestamp text-muted small">@comentario.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
-                        </div>
-                        @if (comentario.Oculto)
-                        {
-                            <span class="badge bg-warning text-dark mb-2">Oculto para los visitantes</span>
-                        }
-                        <div class="comment mt-2">@comentario.Texto</div>
-
-                        <div class="mt-2">
-                            @if (Model.PuedeParticipar)
-                            {
-                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#responder-@comentario.Id">Responder</button>
-                            }
-                            @if (Model.EsAdministrador || string.Equals(comentario.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
-                            {
-                                <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
-                                      onsubmit="return confirm('¿Seguro que desea eliminar este comentario?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@comentario.Id" />
-                                    <input type="hidden" name="sitioId" value="@sitio.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                                </form>
-                            }
-                        </div>
-
-                        @if (Model.PuedeParticipar)
-                        {
-                            <div class="collapse mt-3" id="responder-@comentario.Id">
-                                <form asp-controller="Comentarios" asp-action="Agregar" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="sitioId" value="@sitio.Id" />
-                                    <input type="hidden" name="respuestaAId" value="@comentario.Id" />
-                                    <div class="mb-2">
-                                        <textarea class="form-control" name="comentario" rows="2" maxlength="1000"
-                                                  placeholder="Responder a @comentario.NombreUsuario" required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-sm btn-danger">Enviar respuesta</button>
-                                </form>
+                    <div class="card-body comentario">
+                        <span class="avatar">@comentario.NombreUsuario[..1]</span>
+                        <div class="cuerpo">
+                            <div class="d-flex justify-content-between flex-wrap gap-1">
+                                <div class="username">@comentario.NombreUsuario</div>
+                                <div class="timestamp">@comentario.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
                             </div>
-                        }
+                            @if (comentario.Oculto)
+                            {
+                                <span class="badge bg-warning text-dark mb-2">Oculto para los visitantes</span>
+                            }
+                            <div class="comment mt-1">@comentario.Texto</div>
 
-                        @if (comentario.Respuestas.Count > 0)
-                        {
-                            <div class="respuestas mt-3 ps-4 border-start">
-                                @foreach (var respuesta in comentario.Respuestas)
+                            <div class="mt-2 d-flex flex-wrap gap-1">
+                                @if (Model.PuedeParticipar)
                                 {
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between">
-                                            <div class="username fw-bold">@respuesta.NombreUsuario</div>
-                                            <div class="timestamp text-muted small">@respuesta.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
-                                        </div>
-                                        @if (respuesta.Oculto)
-                                        {
-                                            <span class="badge bg-warning text-dark">Oculto para los visitantes</span>
-                                        }
-                                        <div class="comment">@respuesta.Texto</div>
-                                        @if (Model.EsAdministrador || string.Equals(respuesta.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
-                                                  onsubmit="return confirm('¿Seguro que desea eliminar esta respuesta?');">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@respuesta.Id" />
-                                                <input type="hidden" name="sitioId" value="@sitio.Id" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger mt-1">Eliminar</button>
-                                            </form>
-                                        }
-                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#responder-@comentario.Id">
+                                        <i class="bi bi-reply"></i> Responder
+                                    </button>
+                                }
+                                @if (Model.EsAdministrador || string.Equals(comentario.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Seguro que desea eliminar este comentario?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@comentario.Id" />
+                                        <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                    </form>
                                 }
                             </div>
-                        }
+
+                            @if (Model.PuedeParticipar)
+                            {
+                                <div class="collapse mt-3" id="responder-@comentario.Id">
+                                    <form asp-controller="Comentarios" asp-action="Agregar" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                        <input type="hidden" name="respuestaAId" value="@comentario.Id" />
+                                        <div class="mb-2">
+                                            <textarea class="form-control" name="comentario" rows="2" maxlength="1000"
+                                                      placeholder="Responder a @comentario.NombreUsuario" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-danger">Enviar respuesta</button>
+                                    </form>
+                                </div>
+                            }
+
+                            @if (comentario.Respuestas.Count > 0)
+                            {
+                                <div class="respuestas mt-3 ps-3 border-start">
+                                    @foreach (var respuesta in comentario.Respuestas)
+                                    {
+                                        <div class="comentario mb-3">
+                                            <span class="avatar avatar-chico">@respuesta.NombreUsuario[..1]</span>
+                                            <div class="cuerpo">
+                                                <div class="d-flex justify-content-between flex-wrap gap-1">
+                                                    <div class="username">@respuesta.NombreUsuario</div>
+                                                    <div class="timestamp">@respuesta.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
+                                                </div>
+                                                @if (respuesta.Oculto)
+                                                {
+                                                    <span class="badge bg-warning text-dark">Oculto para los visitantes</span>
+                                                }
+                                                <div class="comment">@respuesta.Texto</div>
+                                                @if (Model.EsAdministrador || string.Equals(respuesta.NombreUsuario, Model.NombreUsuario, StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    <form asp-controller="Comentarios" asp-action="Eliminar" method="post" class="d-inline"
+                                                          onsubmit="return confirm('¿Seguro que desea eliminar esta respuesta?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@respuesta.Id" />
+                                                        <input type="hidden" name="sitioId" value="@sitio.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger mt-1">Eliminar</button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             }
